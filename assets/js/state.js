@@ -13,7 +13,7 @@ MEI.defaultState = function(){
     readTexts:[],
     settings:{ master:.85, music:.7, sfx:.9, voice:.9,
                photosafe:true, crt:false, noise:false, vignette:false,
-               textSpeed:'normal', lessScare:false },
+               textSpeed:'normal', lessScare:false, softHint:'normal' },
     stats:{ playSeconds:0, held:0, hintsUsed:0 },
     saveMeta:{}
   };
@@ -82,6 +82,11 @@ MEI.SceneController = {
   build(id){
     const layer=MEI.$('#screen-layer');
     if(this.node){ const old=this.node; old.classList.add('leaving');
+      /* 旧节点仅保留退场动画：不再拦截点击，且移除其 id，
+         使 render() 内的全局 MEI.$('#id') 一定命中新节点，
+         避免“返回/重访后新画面控件没绑上事件 / 被旧节点挡住”。 */
+      old.style.pointerEvents='none';
+      old.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
       setTimeout(()=>old.remove(),420); }
     const node=MEI.el('div',{class:'scene',id:'scene-'+id});
     layer.appendChild(node);

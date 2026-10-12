@@ -139,3 +139,79 @@ body.crt-on .dlg-window{filter:brightness(.92);}
 .ending-card{text-align:center;padding:20px;}
 .ending-card .ec-title{font-size:24px;font-weight:900;margin-bottom:12px;}
 .ending-card .ec-desc{font-size:14px;line-height:2;color:#444;}
+
+/* ============================================================
+   support.js — 自愿赞赏层（旧信纸 / 烛灯质感，前缀 .mei-support-*）
+   ============================================================ */
+.mei-support-chip{position:fixed;right:16px;bottom:16px;z-index:9000;display:flex;align-items:center;gap:6px;
+  padding:7px 11px;border:1px solid rgba(150,110,70,.5);border-radius:2px;
+  background:rgba(28,20,14,.86);color:#e6cf9a;cursor:pointer;
+  font:12px/1 var(--f-sans);letter-spacing:1px;box-shadow:0 6px 20px rgba(0,0,0,.4);
+  backdrop-filter:blur(3px);transition:background .25s,color .25s,transform .25s;}
+.mei-support-chip .msc-moon{font-size:13px;}
+.mei-support-chip:hover{background:rgba(58,38,22,.94);color:#fff0cf;transform:translateY(-1px);}
+body.mei-support-done .mei-support-chip{border-color:rgba(140,150,110,.55);color:#c7d2a8;}
+body.mei-support-done .mei-support-chip .msc-text::after{content:" · 已支持";color:#9aaa7e;}
+
+.mei-support-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(18,12,8,.78);backdrop-filter:blur(5px);
+  opacity:0;transition:opacity .38s ease;}
+.mei-support-overlay[hidden]{display:none!important;}
+.mei-support-overlay.is-open{opacity:1;}
+
+.mei-support-card{position:relative;width:min(680px,94vw);max-height:92vh;overflow:auto;
+  background:
+    radial-gradient(ellipse at 20% 0%,rgba(120,80,40,.10),transparent 60%),
+    radial-gradient(ellipse at 100% 100%,rgba(90,50,30,.12),transparent 55%),
+    #ece1c8;
+  color:#3a2f24;border:1px solid #7a6248;box-shadow:0 28px 80px rgba(0,0,0,.6);
+  transform:translateY(16px) scale(.985);transition:transform .38s ease;}
+.mei-support-overlay.is-open .mei-support-card{transform:none;}
+.mei-support-card:before{content:"";position:absolute;left:0;right:0;top:0;height:5px;
+  background:linear-gradient(90deg,#6b3226,#9a5a2a,#6b3226);}
+.msc-inner{padding:26px 30px 22px;}
+.mei-support-close{position:absolute;right:10px;top:8px;width:34px;height:34px;border:0;background:transparent;
+  color:#8a6f52;font:26px/1 Georgia,serif;cursor:pointer;}
+.mei-support-close:hover{color:#5c2a20;}
+
+.msc-head{padding-right:34px;border-bottom:1px solid #c3b394;padding-bottom:12px;}
+.msc-eyebrow{color:#8a6f52;font:10px/1.5 var(--f-mono);letter-spacing:2px;}
+.msc-head h2{margin:6px 0 4px;color:#5a2c20;font:400 23px/1.4 var(--f-serif);letter-spacing:2px;}
+.msc-sub{margin:0;color:#8a7458;font-size:11px;}
+
+.msc-body{display:grid;grid-template-columns:150px 1fr;gap:22px;align-items:start;padding:20px 0 16px;}
+.msc-qr{margin:0;padding:8px;background:#f6f0e0;border:1px solid #b8a482;box-shadow:3px 4px 0 rgba(80,58,38,.16);}
+.msc-qr img{display:block;width:134px;height:160px;object-fit:contain;object-position:50% 42%;background:#fff;}
+.msc-qr figcaption{padding:7px 2px 2px;text-align:center;color:#7a664c;font:10px/1.4 var(--f-mono);}
+
+.msc-copy{font:13px/1.95 var(--f-serif);color:#403428;}
+.msc-copy p{margin:0 0 10px;}
+.msc-note{margin-top:12px!important;padding:9px 12px;border-left:3px solid #7a3933;background:#ddd0b4;color:#5b4638;}
+
+.msc-foot{display:flex;gap:10px;padding-top:14px;border-top:1px dashed #b6a482;}
+.msc-foot button{flex:1;padding:10px 12px;border:1px solid #8a7258;font:12px/1.2 var(--f-sans);cursor:pointer;}
+.msc-done{background:#6b3226;color:#f0e2c8;}
+.msc-later{background:#e4d8bd;color:#5f4e3a;}
+.msc-foot button:hover{filter:brightness(.96);}
+
+.mei-support-toast{position:fixed;left:50%;bottom:26px;z-index:10020;transform:translate(-50%,16px);opacity:0;
+  background:rgba(30,22,16,.96);color:#ecd9b4;border:1px solid #7a6248;padding:10px 16px;
+  font:12px/1.5 var(--f-sans);box-shadow:0 14px 38px rgba(0,0,0,.4);white-space:nowrap;
+  transition:opacity .35s ease,transform .35s ease;}
+.mei-support-toast.show{opacity:1;transform:translate(-50%,0);}
+
+@media(max-width:620px){
+  .mei-support-chip{right:10px;bottom:10px;padding:8px;}
+  .mei-support-overlay{padding:10px;}
+  .msc-inner{padding:22px 16px 16px;}
+  .msc-head h2{font-size:19px;}
+  .msc-body{grid-template-columns:1fr;gap:14px;}
+  .msc-qr{width:140px;margin:0 auto;}
+  .msc-qr img{width:124px;height:148px;}
+  .msc-copy{font-size:12px;}
+  .msc-foot{flex-direction:column;}
+  .mei-support-toast{max-width:calc(100vw - 24px);white-space:normal;text-align:center;}
+}
+@media(prefers-reduced-motion:reduce){
+  .mei-support-overlay,.mei-support-card,.mei-support-toast,.mei-support-chip{transition:none;}
+}

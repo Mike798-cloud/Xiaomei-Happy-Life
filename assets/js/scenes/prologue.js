@@ -119,14 +119,20 @@ MEI.registerScene({
       MEI.el('span',{class:'mb-btn'},'⟳'),
       MEI.el('div',{class:'mb-url'},'mail.oldmail.com/archive/')));
 
-    /* 年代风格横幅 + 广告位 */
+    /* 年代风格横幅 */
     world.appendChild(MEI.el('div',{class:'mail-banner'},
       MEI.el('div',{class:'mail-logo'},'oldmail.com'),
-      MEI.el('div',{class:'mail-slogan'},'— 你 2003 年的信，我们替你留着 —'),
+      MEI.el('div',{class:'mail-slogan'},'你 2003 年的信，我们替你留着'),
       MEI.el('div',{class:'mail-search'},
         MEI.el('input',{class:'mail-search-input',placeholder:'搜索邮件 / 联系人'}),
-        MEI.el('button',{class:'mini-btn',onclick:()=>MEI.Hint.flash('搜索服务器已经停了，只剩本地的几封旧邮件。')},'搜索')),
-      MEI.el('div',{class:'mail-ad'},'【广告】临江市一小·课后辅导班　★　拨号上网 96163　★　小白花牌铅笔')));
+        MEI.el('button',{class:'mini-btn',onclick:()=>MEI.Hint.flash('搜索服务器已经停了，只剩本地的几封旧邮件。')},'搜索'))));
+
+    /* 可横向滚动的老式广告条 */
+    const ads=['临江市一小 · 课后辅导班','拨号上网 96163','小白花牌铅笔','江南儿童网页大全',
+      '临江市中心医院','摩天轮游乐园门票','旧版聊天室 · 今晚八点'];
+    const adTrack=MEI.el('div',{class:'mail-adtrack'});
+    [0,1].forEach(()=>ads.forEach(a=>adTrack.appendChild(MEI.el('span',{},a))));
+    world.appendChild(MEI.el('div',{class:'mail-adstrip'},adTrack));
 
     /* 主体三栏 */
     const body=MEI.el('div',{class:'mail-body'});
@@ -209,8 +215,10 @@ MEI.registerScene({
   refreshList(){
     if(!this.listEl) return;
     const list=this.listEl;list.innerHTML='';
+    list.classList.toggle('list-archived',this.currentFolder==='archive');
     list.appendChild(MEI.el('div',{class:'ml-head'},
       MEI.el('span',{class:'ml-star'},'★'),
+      MEI.el('span',{class:'ml-ava'}),
       MEI.el('span',{class:'ml-from'},'发件人'),
       MEI.el('span',{class:'ml-sub'},'主题'),
       MEI.el('span',{class:'ml-date'},'日期')));
@@ -220,12 +228,14 @@ MEI.registerScene({
       return;
     }
     mails.forEach(m=>{
+      const fromName=m.from.split('<')[0].trim();
+      const ava=(fromName.charAt(0)||'·');
       const row=MEI.el('div',{class:'ml-row'+(m.read?'':' unread')+(m.anomaly?' anomaly':'')
           +(this.openMailId===m.id?' selected':'')},
         MEI.el('span',{class:'ml-star'+(m.star?' starred':'')},m.star?'★':'☆'),
-        MEI.el('span',{class:'ml-from'},m.from.split('<')[0].trim()),
-        MEI.el('span',{class:'ml-sub'},
-          m.read?'':'● ', m.sub),
+        MEI.el('span',{class:'ml-ava'},ava),
+        MEI.el('span',{class:'ml-from'},fromName),
+        MEI.el('span',{class:'ml-sub'},m.sub),
         MEI.el('span',{class:'ml-date'},m.date));
       row.onclick=()=>this.openMail(m);
       list.appendChild(row);
@@ -233,20 +243,21 @@ MEI.registerScene({
   },
 
   buildView(){
-    this.viewEl=MEI.el('div',{class:'mail-view'},
-      MEI.el('div',{class:'mv-empty'},'← 从左边选一封信看。'));
+    this.viewEl=MEI.el('div',{class:'mail-view'});
     this.refreshView();
     return this.viewEl;
   },
 
   refreshView(){
     if(!this.viewEl) return;
+    this.viewEl.classList.toggle('mv-archived',this.currentFolder==='archive');
     if(!this.openMailId){
       this.viewEl.innerHTML='';
       this.viewEl.appendChild(MEI.el('div',{class:'mv-empty'},
+        MEI.el('span',{class:'mv-empty-glyph'},'✉'),
         this.currentFolder==='archive'
-          ?'选一封信。2003 年的旧邮件都在这儿。'
-          :'选一封信。'));
+          ?'这里安静地躺着 2003 年。'
+          :'没有选中的邮件。'));
       return;
     }
     const m=this.currentMails().find(x=>x.id===this.openMailId);
@@ -255,16 +266,17 @@ MEI.registerScene({
     this.viewEl.appendChild(MEI.el('div',{class:'mv-head'},
       MEI.el('div',{class:'mv-subject'},m.sub),
       MEI.el('div',{class:'mv-meta'},
-        MEI.el('div',{},'发件人：'+m.from),
-        MEI.el('div',{},'收件人：'+(m.to||'xiaomei_1600@oldmail.com')),
-        MEI.el('div',{},'时间：'+m.date),
-        MEI.el('div',{class:'mv-ip'},'IP：218.94.160.202 · 临江市'))));
+        MEI.el('div',{class:'mv-m-row'},MEI.el('b',{},'发件人'),MEI.el('span',{},m.from)),
+        MEI.el('div',{class:'mv-m-row'},MEI.el('b',{},'收件人'),MEI.el('span',{},m.to||'xiaomei_1600@oldmail.com')),
+        MEI.el('div',{class:'mv-m-row'},MEI.el('b',{},'时间'),MEI.el('span',{},m.date)),
+        MEI.el('div',{class:'mv-m-row'},MEI.el('b',{},'IP'),MEI.el('span',{class:'mv-ip'},'218.94.160.202 · 临江市')))));
     this.viewEl.appendChild(MEI.el('div',{class:'mv-body',html:m.body.replace(/\n/g,'<br>')}));
     if(m.sig) this.viewEl.appendChild(MEI.el('div',{class:'mv-sig'},'———<br>'+m.sig));
     if(m.link){
       /* 入口邮件：点链接 → 拨号 */
       const link=MEI.el('a',{class:'mv-link',onclick:()=>this.dial(this.root)},m.link);
-      this.viewEl.appendChild(MEI.el('div',{class:'mv-linkbox'},link));
+      this.viewEl.appendChild(MEI.el('div',{class:'mv-linkbox'},
+        MEI.el('div',{class:'mv-link-label'},'你在 2003 年留下的地址'),link));
     }
     /* 已读 */
     m.read=true;
@@ -301,7 +313,7 @@ MEI.registerScene({
   welcome(root,ov){
     ov.remove();
     const w=MEI.el('div',{class:'welcome-overlay'});
-    const win=MEI.el('div',{class:'outset welcome-win'},
+    const win=MEI.el('div',{class:'welcome-win'},
       MEI.el('div',{class:'welcome-titlebar'},'欢迎'),
       MEI.el('div',{class:'welcome-body'},
         '欢迎来到小美の快乐家园～',MEI.el('br'),MEI.el('br'),

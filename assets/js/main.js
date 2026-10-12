@@ -65,18 +65,21 @@ MEI.openWarning=function(onAgree){
 MEI.openAbout=function(){
   const layer=MEI.$('#modal-layer');
   const bd=MEI.el('div',{class:'modal-backdrop'});
-  bd.appendChild(MEI.el('div',{class:'modal-win',style:{width:'440px'}},
-    MEI.el('div',{class:'modal-titlebar'},MEI.el('span',{},'关于本作'),
+  bd.appendChild(MEI.el('div',{class:'modal-win',style:{width:'452px'}},
+    MEI.el('div',{class:'modal-titlebar'},MEI.el('span',{},'关于 · 游玩前的话'),
       MEI.el('span',{class:'modal-close',onclick:()=>bd.remove()},'×')),
-    MEI.el('div',{class:'modal-body',style:{'line-height':'1.9'}},
-      MEI.el('div',{},'《小美の快乐家园》是一部原创叙事恐怖网页游戏。'),
-      MEI.el('div',{},'前期以氛围与惊吓为主，后期转向哀伤与告别。'),
+    MEI.el('div',{class:'modal-body',style:{'line-height':'1.95'}},
+      MEI.el('div',{},'《小美の快乐家园》是一个虚构的故事，藏在一个 2003 年的儿童主页里。故事里的人物、事件与地点，都不是真的。'),
+      MEI.el('div',{class:'small',style:{'margin-top':'12px'}},
+        '前半段以氛围和惊吓为主，后半段会慢慢转向哀伤与告别。途中有阴暗的画面、突如其来的声响，也有一些让人心里发沉的段落。'),
       MEI.el('div',{class:'small',style:{'margin-top':'10px'}},
-        '全部画面由 HTML/CSS/SVG 绘制，全部音乐音效由 Web Audio 实时合成，无任何第三方素材。'),
-      MEI.el('div',{class:'small',style:{'margin-top':'8px'}},
-        '共 12 个谜题、3 种结局。修好网页、集齐蜡烛·花·信，可抵达真结局。')),
+        '画面里有少量闪烁和明暗对比。如果你对强光敏感、心脏容易不适，或者最近情绪低落、不太经得起惊吓，请斟酌要不要继续；中途觉得不舒服，就先关掉，去做点别的。'),
+      MEI.el('div',{class:'small',style:{'margin-top':'10px'}},
+        '找个安静的夜晚，戴上耳机，一个人慢慢看就好。路要你自己一页一页去翻，她不会催你。'),
+      MEI.el('div',{class:'small',style:{'margin-top':'10px','color':'#7a6a5f'}},
+        '故事里所有危险的情节都只是虚构，请勿在现实里模仿。')),
     MEI.el('div',{class:'modal-footer'},
-      MEI.el('button',{class:'btn',onclick:()=>bd.remove()},'关闭'))));
+      MEI.el('button',{class:'btn btn-primary',onclick:()=>bd.remove()},'我知道了'))));
   layer.appendChild(bd);
 };
 
@@ -118,6 +121,7 @@ MEI.openSettings=function(){
       slider('主音量','master'),slider('音乐','music'),
       slider('音效','sfx'),slider('语音','voice'),
       radios('文字速度','textSpeed',[['慢','slow'],['正常','normal'],['快','fast']]),
+      radios('卡关提示','softHint',[['关闭','off'],['少','low'],['正常','normal']]),
       check('CRT 扫描线','crt'),check('画面噪点','noise'),
       check('暗角效果','vignette'),check('光敏警告（闪烁减弱）','photosafe'),
       check('减少惊吓（弱化突脸）','lessScare')),
