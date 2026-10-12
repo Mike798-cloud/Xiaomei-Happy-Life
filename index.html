@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小美の快乐家园</title>
+<meta name="description" content="一个2003年的儿童个人主页。来找我玩呀～不要走～">
+<link rel="stylesheet" href="assets/css/base.css?v=1.3">
+<link rel="stylesheet" href="assets/css/surface.css?v=1.3">
+<link rel="stylesheet" href="assets/css/depth.css?v=1.3">
+<link rel="stylesheet" href="assets/css/effects.css?v=1.3">
+<link rel="stylesheet" href="assets/css/ui.css?v=1.3">
+</head>
+<body>
+<noscript>
+  <div style="padding:40px;text-align:center;font-family:sans-serif;color:#444">
+    本游戏需要启用 JavaScript 才能游玩。<br>请在浏览器设置中开启 JavaScript 后刷新页面。
+  </div>
+</noscript>
+
+<div id="game-root">
+  <!-- 场景渲染层 -->
+  <div id="screen-layer" aria-live="polite"></div>
+  <!-- 转场层（淡出 / 蜕皮烧洞） -->
+  <div id="transition-layer"></div>
+  <!-- UI 层：对话框、提示、背包、菜单 -->
+  <div id="ui-layer">
+    <div id="hud" class="hidden">
+      <button class="hud-btn pause" id="hud-pause" title="暂停（ESC）">⏸</button>
+      <button class="hud-btn bag" id="hud-bag" title="收藏夹">🎒</button>
+      <div class="chapter-label" id="chapter-label"></div>
+    </div>
+    <div id="dialogue-box" class="hidden"></div>
+    <div id="hint-box" class="hidden"></div>
+    <div id="inventory-panel" class="hidden"></div>
+    <div id="modal-layer"></div>
+    <!-- 暂停菜单 -->
+    <div id="pause-menu" class="start-menu hidden">
+      <div class="start-menu-win">
+        <div class="start-menu-title">已暂停</div>
+        <button class="start-item" id="pm-resume">继续游戏</button>
+        <button class="start-item" id="pm-save">保存 / 读取</button>
+        <button class="start-item" id="pm-settings">设置</button>
+        <button class="start-item" id="pm-title">回到标题</button>
+      </div>
+    </div>
+  </div>
+  <!-- 滤镜层：CRT 扫描线 / 噪点 / 暗角 -->
+  <div id="filter-layer">
+    <div id="crt-filter"></div>
+    <div id="noise-filter"></div>
+    <div id="vignette-filter"></div>
+  </div>
+</div>
+
+<!-- 加载提示 -->
+<div id="boot-loading">
+  <div class="boot-box">
+    <div class="boot-title">小美の快乐家园</div>
+    <div class="boot-bar"><div id="boot-bar-fill"></div></div>
+    <div class="boot-tip" id="boot-tip">正在连接 16300 …</div>
+  </div>
+</div>
+
+<!-- ============ 数据层 ============ -->
+<script src="assets/data/diary.js?v=1.3"></script>
+<script src="assets/data/messages.js?v=1.3"></script>
+<script src="assets/data/files.js?v=1.3"></script>
+<script src="assets/data/puzzles.config.js?v=1.3"></script>
+<script src="assets/data/ui-text.js?v=1.3"></script>
+<!-- ============ 引擎 ============ -->
+<script src="assets/js/utils.js?v=1.3"></script>
+<script src="assets/js/state.js?v=1.3"></script>
+<script src="assets/js/save.js?v=1.3"></script>
+<script src="assets/js/audio.js?v=1.3"></script>
+<script src="assets/js/dialogue.js?v=1.3"></script>
+<!-- ============ 谜题 ============ -->
+<script src="assets/js/puzzles/cipher.js?v=1.3"></script>
+<script src="assets/js/puzzles/registry.js?v=1.3"></script>
+<!-- ============ 场景 ============ -->
+<script src="assets/js/scenes/prologue.js?v=1.3"></script>
+<script src="assets/js/scenes/homepage.js?v=1.3"></script>
+<script src="assets/js/scenes/guestbook.js?v=1.3"></script>
+<script src="assets/js/scenes/molting.js?v=1.3"></script>
+<script src="assets/js/scenes/burnt_room.js?v=1.3"></script>
+<script src="assets/js/scenes/truth.js?v=1.3"></script>
+<script src="assets/js/scenes/memory.js?v=1.3"></script>
+<script src="assets/js/scenes/finale.js?v=1.3"></script>
+<script src="assets/js/scenes/endings.js?v=1.3"></script>
+<!-- ============ 启动 ============ -->
+<script src="assets/js/main.js?v=1.3"></script>
+</body>
+</html>

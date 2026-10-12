@@ -1,0 +1,407 @@
+/* ============================================================
+   depth.css — 里层世界：烧焦的儿童房（高度复刻参考图2）
+   ============================================================ */
+
+/* ---------- 褪色粉色碎花墙纸 + 烟熏发霉 ---------- */
+.depth-world{
+  width:100%;height:100%;position:relative;overflow:hidden;
+  background-color:#2c2628;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><path d='M8 132 q30 -20 48 -54' stroke='%236f7a64' stroke-width='1.6' fill='none' opacity='.6'/><ellipse cx='30' cy='106' rx='9' ry='4.5' fill='%23849274' opacity='.62' transform='rotate(-28 30 106)'/><ellipse cx='46' cy='86' rx='8' ry='4' fill='%237c8a6c' opacity='.62' transform='rotate(-42 46 86)'/><g transform='translate(60 68)' opacity='.8'><circle cy='-8' r='5.2' fill='%23c79aa5'/><circle cx='7.6' cy='-2.5' r='5.2' fill='%23c79aa5'/><circle cx='4.7' cy='6.5' r='5.2' fill='%23c79aa5'/><circle cx='-4.7' cy='6.5' r='5.2' fill='%23c79aa5'/><circle cx='-7.6' cy='-2.5' r='5.2' fill='%23c79aa5'/><circle r='3.3' fill='%23c9b06a'/></g><g transform='translate(116 122) scale(.68)' opacity='.66'><circle cy='-8' r='5.2' fill='%23cfa6b0'/><circle cx='7.6' cy='-2.5' r='5.2' fill='%23cfa6b0'/><circle cx='4.7' cy='6.5' r='5.2' fill='%23cfa6b0'/><circle cx='-4.7' cy='6.5' r='5.2' fill='%23cfa6b0'/><circle cx='-7.6' cy='-2.5' r='5.2' fill='%23cfa6b0'/><circle r='3.3' fill='%23c9b06a'/></g><circle cx='98' cy='38' r='3' fill='%23b98a98' opacity='.55'/><circle cx='26' cy='42' r='2.6' fill='%23b98a98' opacity='.5'/><path d='M120 30 q-14 12 -20 30' stroke='%236f7a64' stroke-width='1.3' fill='none' opacity='.5'/><ellipse cx='108' cy='48' rx='7' ry='3.6' fill='%23849274' opacity='.5' transform='rotate(34 108 48)'/></svg>"),
+    linear-gradient(180deg,#17130f 0%,#332c2c 26%,#453c3c 58%,#383234 82%,#241f1e 100%);
+  background-size:150px 150px,100% 100%;
+}
+/* 霉斑 / 水渍 / 墙皮剥落 / 顶部烟熏 / 暗角 */
+.depth-world::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:
+    radial-gradient(200px 150px at 16% 30%,rgba(58,82,52,.62),transparent 70%),
+    radial-gradient(260px 190px at 84% 60%,rgba(40,62,42,.6),transparent 72%),
+    radial-gradient(180px 150px at 60% 86%,rgba(34,50,34,.5),transparent 70%),
+    radial-gradient(420px 200px at 50% -6%,rgba(8,8,6,.92),transparent 72%),
+    radial-gradient(ellipse at 50% 46%,transparent 42%,rgba(0,0,0,.7) 100%);
+}
+/* 墙皮剥落的浅色碎块 */
+.depth-world::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:2;opacity:.5;
+  background:
+    radial-gradient(70px 46px at 26% 70%,rgba(150,146,138,.28),transparent 72%),
+    radial-gradient(54px 38px at 72% 24%,rgba(150,146,138,.22),transparent 72%),
+    radial-gradient(40px 30px at 44% 16%,rgba(150,146,138,.18),transparent 72%);
+}
+
+/* 地面：旧地板透视 + 血迹焦痕 */
+.depth-floor{position:absolute;left:0;right:0;bottom:0;height:27%;z-index:3;
+  background:
+    repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 2px,transparent 2px 120px),
+    linear-gradient(180deg,rgba(20,16,12,.35),#100d0a 78%);
+  border-top:2px solid rgba(0,0,0,.6);}
+.depth-floor::before{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent 0 26px,rgba(0,0,0,.22) 26px 28px);}
+.depth-floor::after{content:"";position:absolute;left:28%;top:8%;width:260px;height:80px;
+  background:radial-gradient(ellipse,rgba(96,14,14,.55),rgba(60,8,8,.25) 45%,transparent 72%);
+  filter:blur(2px);}
+
+/* 净化（长回来） */
+.depth-world.purified{
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><g transform='translate(60 68)'><circle cy='-8' r='5.2' fill='%23f0b9c8'/><circle cx='7.6' cy='-2.5' r='5.2' fill='%23f0b9c8'/><circle cx='4.7' cy='6.5' r='5.2' fill='%23f0b9c8'/><circle cx='-4.7' cy='6.5' r='5.2' fill='%23f0b9c8'/><circle cx='-7.6' cy='-2.5' r='5.2' fill='%23f0b9c8'/><circle r='3.3' fill='%23f4d87a'/></g><g transform='translate(116 122) scale(.68)'><circle cy='-8' r='5.2' fill='%23f0b9c8'/><circle cx='7.6' cy='-2.5' r='5.2' fill='%23f0b9c8'/><circle cx='4.7' cy='6.5' r='5.2' fill='%23f0b9c8'/><circle cx='-4.7' cy='6.5' r='5.2' fill='%23f0b9c8'/><circle cx='-7.6' cy='-2.5' r='5.2' fill='%23f0b9c8'/><circle r='3.3' fill='%23f4d87a'/></g><path d='M8 132 q30 -20 48 -54' stroke='%238aa878' stroke-width='1.6' fill='none'/><ellipse cx='30' cy='106' rx='9' ry='4.5' fill='%2396bb86' transform='rotate(-28 30 106)'/></svg>"),
+    linear-gradient(180deg,#e6e0d2,#d6d0c0);
+  background-size:150px 150px,100% 100%;
+}
+.depth-world.purified::before,.depth-world.purified::after{opacity:.12;}
+
+/* ---------- 锈蚀做旧的金属彩虹标题 ---------- */
+.depth-header{position:absolute;top:12px;left:0;right:0;text-align:center;z-index:8;pointer-events:none;}
+.depth-title{
+  font-family:"STKaiti","KaiTi","楷体",var(--f-serif);
+  font-weight:900;letter-spacing:4px;font-size:clamp(30px,5.4vw,58px);line-height:1;
+  color:transparent;-webkit-text-stroke:2px #1c0d0a;
+  background:linear-gradient(180deg,#ef9a5e 0%,#c25a44 16%,#d8a84c 32%,#8a9650 48%,#568898 64%,#965aa4 80%,#5a2c40 100%);
+  -webkit-background-clip:text;background-clip:text;
+  filter:
+    drop-shadow(2px 2px 0 #2a1410) drop-shadow(3px 3px 0 #1a0c08)
+    drop-shadow(4px 6px 9px rgba(0,0,0,.75)) grayscale(.28) contrast(1.06) brightness(.92);
+  position:relative;display:inline-block;
+}
+/* 标题锈斑 + 滴血 */
+.depth-title::after{content:"";position:absolute;left:8%;right:6%;top:0;height:100%;pointer-events:none;
+  background:
+    radial-gradient(7px 12px at 22% 30%,rgba(10,6,4,.55),transparent 70%),
+    radial-gradient(10px 16px at 64% 18%,rgba(10,6,4,.5),transparent 70%),
+    radial-gradient(6px 10px at 84% 44%,rgba(10,6,4,.45),transparent 70%);
+  mix-blend-mode:multiply;}
+.blood-drip{position:absolute;top:62%;width:3px;border-radius:2px;z-index:2;
+  background:linear-gradient(180deg,#7a1010,rgba(90,10,10,.2));
+  animation:dripGrow 6s ease-in infinite;}
+@keyframes dripGrow{0%,60%{height:0;opacity:0;}75%{height:26px;opacity:.9;}100%{height:40px;opacity:0;}}
+
+/* ---------- LED 数码管计数器（两个） ---------- */
+.led-counter{position:absolute;z-index:9;background:#0b0708;
+  border:2px solid #1c1c1c;border-radius:3px;padding:4px 11px;
+  box-shadow:inset 0 0 9px rgba(255,30,30,.35),0 2px 6px rgba(0,0,0,.6);
+  font-family:"Courier New",var(--f-mono);font-weight:bold;color:#ff2a2a;
+  font-size:clamp(18px,2.6vw,30px);letter-spacing:4px;line-height:1;
+  text-shadow:0 0 8px rgba(255,30,30,.95),0 0 3px rgba(255,120,120,.9);}
+.led-counter::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 2px,transparent 2px 4px);}
+.led-counter.tl{top:16px;right:20px;}
+.led-counter.tr{top:96px;right:20px;}
+.led-counter.shatter{animation:ledShatter .8s forwards;}
+@keyframes ledShatter{40%{opacity:1;transform:scale(1.1);}100%{opacity:0;transform:scale(1.4);filter:blur(2px);}}
+
+/* ---------- 不规则烧焦门洞 ---------- */
+.burnt-hole{position:absolute;left:30%;top:13%;width:31%;height:68%;z-index:4;}
+.burnt-hole .hole-edge{position:absolute;inset:-4% -10%;width:120%;height:108%;pointer-events:none;z-index:3;}
+.burnt-hole .hole-dark{position:absolute;inset:1%;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 42%,#000 70%,#040302 86%,#0a0705 96%,transparent 100%);}
+/* 柔和顶光光雾（羽化，不做硬光柱） */
+.burnt-hole::after{
+  content:"";position:absolute;left:50%;top:-6%;transform:translateX(-50%);
+  width:104%;height:108%;pointer-events:none;z-index:6;mix-blend-mode:screen;filter:blur(7px);
+  background:radial-gradient(62% 78% at 50% 24%,rgba(202,218,238,.32),rgba(160,184,212,.09) 48%,transparent 74%);
+  animation:beamFlicker 4.5s ease-in-out infinite;}
+@keyframes beamFlicker{0%,100%{opacity:.92;}50%{opacity:.7;}}
+/* 蜕皮追逐：黑影从纯黑中浮现，不要顶光把她照成灰兜帽 */
+.burnt-hole.chase-hole::after{display:none;}
+.burnt-hole.chase-hole .hole-dark{background:radial-gradient(ellipse at 50% 46%,#000 78%,#050304 94%,transparent 100%);}
+
+/* 白衣长发女孩 */
+.mei-ghost{position:absolute;left:50%;top:2%;width:80%;height:98%;transform:translateX(-50%);
+  z-index:5;opacity:0;transition:opacity 1.4s;pointer-events:none;}
+.mei-ghost.show{opacity:.96;animation:ghostSway 6s ease-in-out infinite;}
+@keyframes ghostSway{50%{transform:translateX(-50%) translateY(-5px);}}
+.mei-ghost svg{width:100%;height:100%;filter:drop-shadow(0 0 16px rgba(0,0,0,.85));}
+
+/* ---------- 旧木门 + 门缝眼睛 ---------- */
+.depth-door{position:absolute;right:5%;top:17%;width:21%;height:68%;z-index:5;}
+.depth-door .door-frame{position:absolute;inset:0;background:linear-gradient(90deg,#15110d,#241d16);
+  border:3px solid #0e0b08;box-shadow:inset 0 0 18px rgba(0,0,0,.7);}
+.depth-door .door-gap{position:absolute;left:0;top:0;bottom:0;width:36%;background:#030303;overflow:hidden;
+  box-shadow:inset 0 0 22px #000;}
+.depth-door .gap-eye{position:absolute;left:6%;top:38%;width:88%;opacity:.92;
+  animation:eyeGlow 5s ease-in-out infinite;}
+@keyframes eyeGlow{0%,70%,100%{opacity:.55;}78%,86%{opacity:1;}}
+.depth-door .gap-eye svg{width:100%;}
+.depth-door .door-slab{position:absolute;right:0;top:0;bottom:0;width:68%;
+  background:
+    repeating-linear-gradient(90deg,rgba(0,0,0,.16) 0 3px,transparent 3px 26px),
+    linear-gradient(90deg,#2a251d,#3c3528 42%,#261f18);
+  border-left:3px solid #100d09;box-shadow:-3px 0 12px rgba(0,0,0,.7);}
+.depth-door .door-panel{position:absolute;left:14%;right:14%;height:26%;
+  border:2px solid rgba(0,0,0,.45);box-shadow:inset 0 0 8px rgba(0,0,0,.4);}
+.depth-door .door-handle{position:absolute;left:8%;top:52%;width:9px;height:18px;
+  background:radial-gradient(circle at 40% 40%,#caa85a,#6e5420);border-radius:3px;z-index:2;}
+.depth-door.hot{cursor:pointer;}
+
+/* 门上铁链 + 警示牌 */
+.depth-sign{position:absolute;left:-34%;top:44%;width:140%;transform:rotate(-9deg);z-index:8;}
+.depth-sign .ds-chain{height:14px;margin:0 auto;width:60%;
+  background:repeating-linear-gradient(90deg,#5a4a32 0 6px,#2a2216 6px 10px);
+  border-radius:4px;opacity:.9;}
+.depth-sign .ds-body{position:relative;border:2px solid #0c0c0c;
+  background:repeating-linear-gradient(45deg,#e8c33a 0 12px,#161616 12px 24px);
+  padding:9px 6px;text-align:center;font-family:var(--f-mono);font-weight:bold;color:#0c0c0c;
+  font-size:clamp(10px,1.1vw,13px);line-height:1.4;box-shadow:2px 3px 0 rgba(0,0,0,.5);}
+.depth-sign .ds-body::before{content:"";position:absolute;inset:7px;background:#e8c33a;z-index:0;}
+.depth-sign .ds-body > *{position:relative;z-index:1;}
+.depth-sign .ds-tri{font-size:15px;}
+
+/* ---------- 左侧半透明乱码资源管理器窗 ---------- */
+.depth-explorer{position:absolute;left:3.5%;top:19%;width:20.5%;height:33%;z-index:7;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:rgba(206,210,216,.68);border:1px solid rgba(20,20,24,.85);
+  box-shadow:0 6px 18px rgba(0,0,0,.55);
+  font-family:var(--f-mono);font-size:clamp(9px,.95vw,12px);cursor:pointer;
+  animation:expFlicker 7s steps(1) infinite;}
+@keyframes expFlicker{0%,92%,100%{opacity:.82;}93%{opacity:.55;}95%{opacity:.86;}97%{opacity:.62;}}
+.depth-explorer .de-title{background:linear-gradient(90deg,rgba(20,40,120,.88),rgba(60,110,190,.72));
+  color:#dfe8ff;padding:2px 6px;font-size:clamp(9px,.9vw,11px);white-space:nowrap;overflow:hidden;flex:none;}
+.depth-explorer .de-body{padding:4px 6px;color:#b01818;line-height:1.55;overflow:hidden;}
+.depth-explorer .de-row{white-space:nowrap;display:flex;gap:4px;align-items:center;}
+.depth-explorer .de-row .fi{flex:0 0 auto;display:inline-flex;}
+.depth-explorer .de-scroll{position:absolute;right:0;top:18px;bottom:0;width:9px;background:rgba(0,0,0,.25);}
+.depth-explorer .de-scroll::after{content:"";position:absolute;left:1px;top:8px;width:7px;height:34px;background:rgba(0,0,0,.4);}
+
+/* ---------- 房间可点物件（暗化融入环境） ---------- */
+.room-hot{position:absolute;z-index:7;cursor:pointer;filter:brightness(.5) saturate(.6);opacity:.82;transition:filter .2s;}
+.room-hot:hover{filter:brightness(.85) saturate(.8);}
+.room-hot .rh-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.85);color:#ddd;font-size:11px;padding:1px 7px;border-radius:2px;
+  white-space:nowrap;opacity:0;transition:opacity .2s;font-family:var(--f-sans);}
+.room-hot:hover .rh-label{opacity:1;}
+.rh-nightstand{left:6%;bottom:26%;width:11%;height:21%;
+  background:linear-gradient(180deg,#43382a,#2a2318);border:2px solid #181208;
+  box-shadow:inset 0 0 12px rgba(0,0,0,.6);}
+.rh-nightstand::before{content:"";position:absolute;left:8%;right:8%;top:42%;height:2px;background:#161008;}
+.rh-nightstand::after{content:"";position:absolute;left:8%;right:8%;top:70%;height:2px;background:#161008;}
+.rh-desk{left:18.5%;bottom:26%;width:11%;height:22%;}
+.rh-desk::before{content:"";position:absolute;left:0;right:0;bottom:0;height:42%;
+  background:linear-gradient(180deg,#3a3224,#241e14);border:2px solid #161008;}
+.rh-desk::after{content:"";position:absolute;left:28%;top:0;width:46%;height:50%;
+  background:linear-gradient(180deg,#2c2c28,#15140f);border:2px solid #0c0b08;
+  box-shadow:inset 0 0 14px rgba(120,150,120,.16);}
+.rh-candle-floor{left:48%;bottom:24%;width:3%;height:11%;}
+.rh-candle-floor::before{content:"";position:absolute;left:42%;bottom:8%;width:26%;height:58%;
+  background:linear-gradient(180deg,#b6ad98,#7a7262);}
+.rh-candle-floor::after{content:"";position:absolute;left:40%;top:0;width:30%;height:24%;border-radius:50%;
+  background:radial-gradient(circle,#e8a83a 30%,rgba(220,120,30,.4) 60%,transparent 76%);}
+.rh-dried-flower{left:56%;bottom:24%;width:3.4%;height:13%;}
+.rh-dried-flower::before{content:"";position:absolute;left:48%;top:30%;bottom:6%;width:2px;background:#3c3c2a;}
+.rh-dried-flower::after{content:"";position:absolute;left:28%;top:8%;width:46%;height:32%;border-radius:50%;
+  background:radial-gradient(circle,#4a4540,#26221c);}
+.room-hot.taken{opacity:.12;pointer-events:none;filter:grayscale(1);}
+
+/* ---------- 旧电脑界面（覆盖全屏的CRT） ---------- */
+.pc-overlay{position:absolute;inset:0;z-index:30;background:rgba(6,8,6,.96);
+  display:flex;flex-direction:column;}
+.pc-titlebar{background:#c9c9c9;padding:3px 6px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:bold;flex:none;}
+.pc-screen{flex:1;display:grid;grid-template-columns:240px 1fr;gap:0;margin:8px;border:2px inset #666;background:#0a0f0a;overflow:hidden;}
+.pc-tree{background:#d8e8d0;border-right:2px solid #7b9b7b;overflow:auto;padding:6px;font-family:var(--f-mono);font-size:13px;}
+.pc-tree .tree-item{padding:2px 4px;cursor:pointer;white-space:nowrap;line-height:1.5;}
+.pc-tree .tree-item.encrypted{color:#b03030;text-decoration:underline;}
+.pc-tree .tree-item.decoded{color:#1a5e1a;}
+.pc-tree .tree-item.opened{background:#3a6ea5;color:#fff;}
+.pc-tree .tree-item.folder{font-weight:bold;}
+.pc-view{background:#f4f4ee;overflow:auto;padding:12px;font-family:var(--f-serif);font-size:15px;line-height:1.85;}
+.pc-view .doc-meta{font-size:12px;color:#777;font-family:var(--f-sans);margin-bottom:8px;border-bottom:1px solid #ccc;padding-bottom:6px;}
+.pc-toolbar{background:#c9c9c9;padding:3px 6px;display:flex;gap:6px;align-items:center;flex:none;font-size:12px;}
+.pc-toolbar button{padding:2px 10px;}
+
+/* 字母转盘 */
+.cipher-decoder{background:#e8e8e0;border:2px inset #888;padding:12px;margin:10px;text-align:center;}
+.cipher-wheel{position:relative;width:220px;height:220px;margin:6px auto;border-radius:50%;
+  border:3px solid #6a5a3a;background:radial-gradient(circle,#f4eccf,#d8c89a);}
+.cipher-wheel .cw-letter{position:absolute;font-family:var(--f-mono);font-size:13px;font-weight:bold;transform:translate(-50%,-50%);}
+.cipher-wheel .cw-letter.outer{color:#7a2222;}
+.cipher-wheel .cw-letter.inner{color:#1a4a8a;}
+.cipher-wheel .cw-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;}
+.cipher-actions{margin-top:8px;display:flex;gap:10px;justify-content:center;}
+
+/* 源代码视图 */
+.source-view{background:#11101c;color:#d8e2ff;font-family:var(--f-mono);font-size:13px;line-height:1.7;
+  padding:12px;white-space:pre-wrap;height:100%;overflow:auto;}
+.source-view .sv-comment{color:#7bd67b;}
+.source-view .sv-tag{color:#ff9d6c;}
+.source-view .sv-attr{color:#7ecbff;}
+
+/* 摩斯锁 */
+.morse-lock{text-align:center;padding:16px;background:#141018;border:2px inset #444;margin:10px;color:#ddd;}
+.morse-key{display:flex;gap:14px;justify-content:center;margin:12px 0;}
+.morse-key button{width:90px;padding:10px;font-size:15px;}
+.morse-readout{font-family:var(--f-mono);font-size:22px;min-height:30px;letter-spacing:4px;color:#ffd34d;}
+.morse-candle{width:40px;height:70px;margin:0 auto;}
+
+/* ============================================================
+   第五幕 · 真相：褪色泛黄的记忆房间 + 日记本阅读器
+   ============================================================ */
+.depth-world.faded{
+  background-color:#cfc8b4;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><path d='M8 132 q30 -20 48 -54' stroke='%23929a82' stroke-width='1.4' fill='none' opacity='.45'/><ellipse cx='30' cy='106' rx='9' ry='4.5' fill='%23a2a88c' opacity='.4' transform='rotate(-28 30 106)'/><g transform='translate(60 68)' opacity='.5'><circle cy='-8' r='5.2' fill='%23d8bcbc'/><circle cx='7.6' cy='-2.5' r='5.2' fill='%23d8bcbc'/><circle cx='4.7' cy='6.5' r='5.2' fill='%23d8bcbc'/><circle cx='-4.7' cy='6.5' r='5.2' fill='%23d8bcbc'/><circle cx='-7.6' cy='-2.5' r='5.2' fill='%23d8bcbc'/><circle r='3.3' fill='%23d8c496'/></g><g transform='translate(116 122) scale(.68)' opacity='.42'><circle cy='-8' r='5.2' fill='%23dcc2c2'/><circle cx='7.6' cy='-2.5' r='5.2' fill='%23dcc2c2'/><circle cx='4.7' cy='6.5' r='5.2' fill='%23dcc2c2'/><circle cx='-4.7' cy='6.5' r='5.2' fill='%23dcc2c2'/><circle cx='-7.6' cy='-2.5' r='5.2' fill='%23dcc2c2'/><circle r='3.3' fill='%23d8c496'/></g></svg>"),
+    linear-gradient(180deg,#e4ddc9 0%,#d6ceb6 46%,#c2b99e 100%);
+  background-size:150px 150px,100% 100%;
+  filter:sepia(.16) saturate(.6);
+}
+.depth-world.faded::before{opacity:.5;
+  background:
+    radial-gradient(440px 220px at 50% -8%,rgba(120,110,90,.4),transparent 72%),
+    radial-gradient(ellipse at 50% 50%,transparent 52%,rgba(70,58,40,.38) 100%);}
+.depth-world.faded::after{opacity:.35;}
+.depth-world.faded .depth-title{
+  background:linear-gradient(180deg,#9a8a6a,#7a6a4c);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1px #5a4a34;
+  filter:drop-shadow(1px 1px 0 #b8ad92) grayscale(.3);}
+.depth-world.faded .depth-floor{filter:sepia(.2) brightness(1.06);}
+.depth-world.faded .depth-door .door-slab{filter:sepia(.2) brightness(1.08);}
+.depth-world.faded .door-warm{position:absolute;inset:0;background:#0a0805;}
+
+/* 日记本阅读器（居中偏左，避开右侧门与左上 HUD） */
+.diary-reader{position:absolute;left:44%;top:50%;transform:translate(-50%,-50%);
+  width:min(760px,72%);max-height:84%;z-index:6;display:flex;flex-direction:column;
+  background:#efe8d4;border:2px outset #c9c0a6;box-shadow:0 14px 44px rgba(20,14,6,.55);
+  font-family:var(--f-serif);}
+.diary-titlebar{background:linear-gradient(90deg,#6a5a3c,#8a7a58);color:#f4ecd8;
+  font-weight:bold;padding:5px 12px;font-size:14px;letter-spacing:2px;flex:none;
+  font-family:var(--f-serif);}
+.diary-body{flex:1;display:grid;grid-template-columns:168px 1fr;min-height:0;}
+.diary-toc{background:#e3dcc6;border-right:1px solid #b6ad94;overflow:auto;padding:8px 0;flex:none;}
+.diary-toc .toc-item{padding:8px 12px;font-size:13px;cursor:pointer;color:#5a4a36;
+  border-bottom:1px dashed #c6bfa6;font-family:var(--f-sans);line-height:1.4;}
+.diary-toc .toc-item:hover{background:#d6ceb4;}
+.diary-toc .toc-item.read{color:#9a8a66;}
+.diary-toc .toc-item.read::before{content:'📖 ';}
+.diary-page{padding:26px 32px;overflow:auto;color:#3a3028;
+  background:
+   repeating-linear-gradient(transparent 0 31px,rgba(120,100,70,.13) 31px 32px),
+   radial-gradient(circle at 12% 8%,rgba(255,250,235,.6),transparent 60%),#f5efde;}
+.diary-page .diary-date{font-size:19px;font-weight:bold;color:#7a5238;letter-spacing:1px;
+  border-bottom:2px solid #cbb892;padding-bottom:7px;margin-bottom:16px;font-family:var(--f-serif);}
+.diary-page .diary-content{font-size:16px;line-height:32px;white-space:normal;}
+.memory-sort{padding:12px 16px;background:#e7e0cb;border-top:1px solid #b6ad94;flex:none;
+  font-family:var(--f-sans);}
+.memory-sort .m9-slot.drop-zone{background:#f6f1e2;border:2px dashed #b6a884;}
+.drag-piece{background:#fbf7ea;border:1px solid #c4b48e;border-radius:4px;padding:6px 10px;cursor:grab;
+  box-shadow:1px 2px 4px rgba(0,0,0,.18);font-family:var(--f-sans);color:#4a3e2c;}
+.drop-zone{background:rgba(255,255,255,.5);border:2px dashed #8a8a8a;border-radius:4px;}
+.drop-zone.correct{background:#dcefd0;border-color:#4a8a4a;}
+.drop-zone.wrong{background:#f3d4d4;border-color:#b04a4a;}
+.piece-tray{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+
+/* ============================================================
+   【第三轮返工】写实照片底 + 透明热点层 + Win9x 界面 + 遗物
+   ============================================================ */
+
+/* ---------- 烧焦房：写实照片作全屏底 ---------- */
+#br-world.br-photo{
+  background-image:url("../img/depth/burnt_room_bg.jpg");
+  background-size:cover;background-position:center 40%;background-color:#16110d;
+}
+/* 照片自带墙纸/霉斑/暗角，关掉 CSS 拼出来的脏污层 */
+#br-world.br-photo::before,#br-world.br-photo::after{opacity:0;}
+#br-world.br-photo .depth-floor{display:none;}
+/* 标题压暗、变小，不抢戏 */
+#br-world.br-photo .depth-header{top:8px;}
+#br-world.br-photo .depth-title.small{font-size:clamp(18px,2.6vw,30px);opacity:.5;
+  -webkit-text-stroke:1px #1c0d0a;}
+
+/* 焦洞（叠在底图中央偏右的火洞上） */
+#br-world.br-photo .burnt-hole{left:45%;top:15%;width:21%;height:66%;z-index:5;}
+#br-world.br-photo .mei-ghost{top:0;height:100%;width:88%;
+  -webkit-mask-image:radial-gradient(ellipse 82% 92% at 50% 48%,#000 64%,rgba(0,0,0,.55) 85%,transparent 100%);
+  mask-image:radial-gradient(ellipse 82% 92% at 50% 48%,#000 64%,rgba(0,0,0,.55) 85%,transparent 100%);}
+#br-world.br-photo .hole-edge{display:none;}
+#br-world.br-photo .mei-ghost img{width:100%;height:100%;object-fit:cover;object-position:center top;
+  filter:brightness(.92) drop-shadow(0 0 18px rgba(0,0,0,.9));}
+/* 净化后房间微微回暖 */
+#br-world.br-photo.purified{filter:brightness(1.12) sepia(.18) hue-rotate(-8deg);}
+
+/* 半开旧门（热区，叠在底图右侧门上） */
+#br-world.br-photo .depth-door{right:6%;top:17%;width:16%;height:62%;z-index:6;}
+#br-world.br-photo .depth-door .door-frame{background:transparent;border:none;box-shadow:none;}
+#br-world.br-photo .depth-door .door-gap{width:100%;left:0;background:rgba(0,0,0,.55);}
+#br-world.br-photo .gap-img img{width:100%;height:100%;object-fit:cover;opacity:.9;
+  animation:eyeGlow 6s ease-in-out infinite;}
+#br-world.br-photo .depth-sign{left:auto;right:8%;top:60%;width:96%;}
+
+/* 透明可点热点层：视觉来自底图，这里只是热区 */
+#br-world.br-photo .room-hot{background:transparent;filter:none;opacity:0;}
+#br-world.br-photo .room-hot:hover{opacity:.28;background:rgba(255,240,200,.18);
+  border:1px dashed rgba(255,240,200,.5);}
+#br-world.br-photo .rh-nightstand{left:12%;bottom:24%;width:9%;height:20%;}
+#br-world.br-photo .rh-desk{left:26%;bottom:24%;width:11%;height:22%;}
+#br-world.br-photo .rh-candle-floor{left:51%;bottom:27%;width:4%;height:10%;}
+#br-world.br-photo .rh-dried-flower{left:56%;bottom:27%;width:4%;height:11%;}
+#br-world.br-photo .rh-ash{left:38%;bottom:12%;width:9%;height:9%;}
+#br-world.br-photo .room-hot.taken{opacity:0!important;pointer-events:none;}
+
+/* ---------- 左侧乱码资源管理器：加列 ---------- */
+.depth-explorer .de-head{display:flex;gap:4px;padding:1px 6px;
+  background:rgba(180,188,200,.5);font-size:9px;color:#5a6068;flex:none;}
+.depth-explorer .de-row .dh-name{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.de-head .dh-name,.de-row .dh-name{flex:1 1 auto;min-width:0;}
+.de-head .dh-size,.de-row .dh-size{flex:0 0 46px;text-align:right;}
+.de-head .dh-type,.de-row .dh-type{flex:0 0 74px;overflow:hidden;}
+.de-head .dh-date,.de-row .dh-date{flex:0 0 96px;text-align:right;}
+
+/* ---------- 遗物特写弹窗 ---------- */
+.relic-backdrop{position:absolute;inset:0;z-index:60;background:rgba(0,0,0,.82);
+  display:flex;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer;}
+.relic-card{background:#efe6d2;border:2px outset #c9b98f;max-width:420px;width:86%;
+  padding:16px;text-align:center;box-shadow:0 16px 50px rgba(0,0,0,.7);cursor:default;}
+.relic-card img{width:100%;max-height:280px;object-fit:contain;background:#0d0a08;
+  border:6px solid #1c1611;margin-bottom:12px;filter:sepia(.25);}
+.relic-cap{font-family:var(--f-serif);font-size:14px;line-height:1.9;color:#3a2e20;
+  white-space:pre-wrap;}
+.relic-close{margin-top:12px;font-family:var(--f-sans);font-size:12px;color:#8a6a3a;}
+
+/* ---------- Win9x 资源管理器增强 ---------- */
+.pc-winbtns span{cursor:pointer;padding:0 6px;}
+.pc-menubar{background:#c9c9c9;border-bottom:1px solid #9a9a9a;padding:2px 8px;
+  display:flex;gap:18px;font-size:12px;flex:none;}
+.pc-menu{cursor:default;}
+.pc-menu:hover{background:#3a6ea5;color:#fff;}
+.tb-sep{width:2px;background:#999;align-self:stretch;margin:0 4px;}
+.pc-statusbar{background:#c9c9c9;border-top:1px solid #9a9a9a;padding:2px 8px;
+  display:flex;justify-content:space-between;font-size:11px;color:#333;flex:none;}
+.pc-tree .tree-item.root{font-weight:bold;}
+.pc-tree .tree-item.subfolder{color:#333;padding-left:14px;}
+.pc-tree .fileline{display:flex;gap:6px;align-items:center;}
+.pc-tree .tl-name{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pc-tree .tl-size{flex:0 0 50px;text-align:right;font-size:11px;color:#666;}
+.pc-tree .tl-type{flex:0 0 80px;font-size:11px;color:#888;}
+/* 文档纸底 */
+.pc-view .doc-paper{position:relative;min-height:80%;
+  background-color:#f3ecd8;background-size:cover;background-position:center;
+  border:1px solid #c9b98f;box-shadow:0 4px 16px rgba(0,0,0,.25);padding:26px 30px;}
+.pc-view .doc-body{background:rgba(248,243,228,.82);padding:14px 18px;border-radius:2px;}
+
+/* ---------- M6 视觉摩斯锁 ---------- */
+.morse-lock{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.morse-paper img{max-width:230px;max-height:150px;border:4px solid #2a2018;
+  background:#1a130c;}
+.morse-candlewrap{position:relative;width:70px;height:90px;}
+.morse-candle{position:absolute;left:26px;bottom:0;width:18px;height:56px;
+  background:linear-gradient(180deg,#e8e2d2,#b8b0a0);border-radius:3px;}
+.morse-candle::before{content:"";position:absolute;left:50%;top:-30px;transform:translateX(-50%);
+  width:10px;height:30px;background:radial-gradient(circle at 50% 80%,#fff2b0,#ff9a2a);
+  border-radius:50% 50% 50% 50%/60% 60% 40% 40%;opacity:.12;transition:opacity .08s;}
+.morse-flame{position:absolute;left:30px;bottom:52px;width:10px;height:30px;
+  border-radius:50% 50% 50% 50%/60% 60% 40% 40%;opacity:0;
+  background:radial-gradient(circle at 50% 80%,#fff6c8,#ffb43a);
+  filter:drop-shadow(0 0 14px rgba(255,180,60,.9));transition:opacity .06s;}
+.morse-flame.on{opacity:1;}
+#morse-demo{margin:4px 0;}
+
+/* ============================================================
+   第五幕 真相：残页碎片边栏
+   ============================================================ */
+.diary-frags{border-top:1px dashed #b6ad94;padding-top:8px;}
+.frags-head{display:flex;align-items:center;gap:8px;padding:4px 12px;
+  font-size:12px;color:#8a7a56;font-family:var(--f-sans);}
+.frags-head img{width:34px;height:34px;object-fit:cover;border:1px solid #b6ad94;
+  border-radius:2px;background:#2a2016;}
+.frag-item{padding:5px 12px 5px 20px;font-size:12px;cursor:pointer;color:#8a7a56;
+  font-family:var(--f-sans);line-height:1.5;}
+.frag-item:hover{background:#e0d6bc;color:#5a4a2a;}
+.frag-date{color:#9a7a4a;}
