@@ -18,7 +18,7 @@ MEI.registerScene({
         MEI.el('button',{class:'btn title-btn',id:'btn-continue'},'继续游戏'),
         MEI.el('button',{class:'btn title-btn',id:'btn-settings'},'设置'),
         MEI.el('button',{class:'btn title-btn',id:'btn-about'},'关于 / 警告')),
-      MEI.el('div',{class:'title-ver'},'v1.0 · 建议佩戴耳机 · 全程约 70–95 分钟'));
+      MEI.el('div',{class:'title-ver'},'建议佩戴耳机 · 全程约 70–95 分钟'));
     t.appendChild(card);
     root.appendChild(t);
     MEI.Audio.setBgm('off');
@@ -73,9 +73,9 @@ MEI.openAbout=function(){
       MEI.el('div',{class:'small',style:{'margin-top':'12px'}},
         '前半段以氛围和惊吓为主，后半段会慢慢转向哀伤与告别。途中有阴暗的画面、突如其来的声响，也有一些让人心里发沉的段落。'),
       MEI.el('div',{class:'small',style:{'margin-top':'10px'}},
-        '画面里有少量闪烁和明暗对比。如果你对强光敏感、心脏容易不适，或者最近情绪低落、不太经得起惊吓，请斟酌要不要继续；中途觉得不舒服，就先关掉，去做点别的。'),
+        '画面里有少量闪烁和明暗对比。如果你对强光敏感、心脏容易不适，或者最近情绪低落、不太经得起惊吓，请斟酌要不要继续；中途觉得不舒服，立刻关闭，缓解之后再继续。'),
       MEI.el('div',{class:'small',style:{'margin-top':'10px'}},
-        '找个安静的夜晚，戴上耳机，一个人慢慢看就好。路要你自己一页一页去翻，她不会催你。'),
+        '找个安静的夜晚，戴上耳机，慢慢浏览，助屏幕前的你玩的开心。'),
       MEI.el('div',{class:'small',style:{'margin-top':'10px','color':'#7a6a5f'}},
         '故事里所有危险的情节都只是虚构，请勿在现实里模仿。')),
     MEI.el('div',{class:'modal-footer'},
