@@ -9,6 +9,8 @@ MEI.defaultState = function(){
             accompanied:false, reducedScares:false, trueEndingReady:false },
     inventory:[],
     collectibles:{ diary:[], files:[], memory:[] },
+    solved:{},
+    ritualStep:0,
     purification:0,
     readTexts:[],
     settings:{ master:.85, music:.7, sfx:.9, voice:.9,
@@ -74,6 +76,7 @@ MEI.SceneController = {
     else if(tr==='fade') await this.fadeFromBlack();
 
     if(sc.onEnter) sc.onEnter();
+    /* 是否存档由 autoSave 依据当前场景决定（标题态不覆盖进度）。 */
     MEI.SaveManager && MEI.SaveManager.autoSave();
     this.showChapterLabel(sc);
     return true;

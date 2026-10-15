@@ -13,6 +13,12 @@ MEI.registerScene({
     world.appendChild(this.stage);world.appendChild(this.phaseBox);
     world.appendChild(MEI.el('div',{class:'m-timeind',id:'m-timeind'},'2003 年 8 月 15 日 · 白天'));
     MEI.Audio.setBgm('warm');
+    /* 阶段恢复：按谜题完成状态决定进入哪个阶段，不重复已完成流程 */
+    if(MEI.Puzzles.isSolved('M11')){
+      MEI.SceneController.goto('finale',{transition:'fade'});
+      return;
+    }
+    if(MEI.Puzzles.isSolved('M10')){ this.phaseNight(); return; }
     this.phaseDay();
   },
 
@@ -62,50 +68,31 @@ MEI.registerScene({
     }});
   },
 
-  /* ---------- 黄昏：折纸船 M10 ---------- */
+  /* ---------- 黄昏：折纸船 M10（健壮排序组件，无死锁/无丢步） ---------- */
   phaseDusk(){
     this.setStage('assets/img/memory/memory_dusk.jpg','2003 年 8 月 15 日 · 黄昏','dusk');
+    MEI.SaveManager.autoSave();
     const b=this.phaseBox;b.innerHTML='';
-    b.appendChild(MEI.el('div',{class:'small',style:{'margin-bottom':'6px'}},
-      '江边。把折纸步骤按顺序拖进数字框，折一只小船：'));
-    const slots=MEI.el('div',{style:{display:'flex',gap:'6px','justify-content':'center',flexWrap:'wrap'}});
-    this.boatSlots=[];
-    for(let i=0;i<6;i++){
-      const z=MEI.el('div',{class:'drop-zone',style:{width:'96px',minHeight:'50px',
-        'font-size':'12px',padding:'5px'}});
-      z.appendChild(MEI.el('div',{class:'small',style:{color:'#888'}},`第${i+1}步`));
-      z.dataset.slot=i;this.boatSlots.push(z);slots.appendChild(z);
-    }
-    const tray=MEI.el('div',{class:'piece-tray','justify-content':'center'});
-    MEI.shuffle(MEI.Data.paperBoatSteps.slice()).forEach(st=>{
-      const p=MEI.el('div',{class:'drag-piece',style:{'font-size':'12px',padding:'6px 8px',
-        width:'96px','text-align':'center'}},st.label);
-      MEI.makeDraggable(p,{root:b,onDrop:(z)=>this.dropBoat(z,p,st)});
-      tray.appendChild(p);
-    });
-    b.appendChild(slots);b.appendChild(tray);
-    this._hintTimer=MEI.Hint.autoTimer('M10');
-  },
-  dropBoat(z,piece,st){
-    if(!z){ piece.remove();this.phaseDusk();return; }
-    z.textContent=st.label;z.dataset.n=st.n;piece.style.display='none';
-    const vals=this.boatSlots.map(x=>x.dataset.n||'');
-    if(vals.every(Boolean)){
-      const correct=MEI.Data.paperBoatSteps.map(x=>String(x.n)).join(',');
-      if(vals.join(',')===correct){
-        this.boatSlots.forEach(x=>x.classList.add('correct'));
+    MEI.makeOrderPuzzle(b,{
+      items:MEI.Data.paperBoatSteps.map(st=>({id:'n'+st.n,label:st.label})),
+      slotCount:6,
+      correct:MEI.Data.paperBoatSteps.slice().sort((a,b)=>a.n-b.n).map(st=>'n'+st.n),
+      positional:true,
+      puzzleId:'M10',
+      intro:'江边。把折纸步骤按顺序排好，折一只小船：',
+      onComplete:()=>{
+        if(this._hintTimer)this._hintTimer();
         MEI.Puzzles.solve('M10',{flash:'小船折好了，放进江里，它慢慢漂远。',
-          onSolve:()=>{ if(this._hintTimer)this._hintTimer();this.phaseNight(); }});
-      }else{
-        this.boatSlots.forEach(x=>x.classList.add('wrong'));MEI.Audio.error();
-        setTimeout(()=>this.phaseDusk(),900);
+          onSolve:()=>this.phaseNight()});
       }
-    }
+    });
+    this._hintTimer=MEI.Hint.autoTimer('M10');
   },
 
   /* ---------- 晚 8：聊天室 ---------- */
   phaseNight(){
     this.setStage('assets/img/memory/memory_night.jpg','2003 年 8 月 15 日 · 晚 8:00','night');
+    MEI.SaveManager.autoSave();
     const b=this.phaseBox;b.innerHTML='';
     const avatar=MEI.el('div',{class:'m-avatar',id:'m-avatar',title:'阿树（离线）'},'●');
     b.appendChild(avatar);
@@ -140,19 +127,45 @@ MEI.registerScene({
   phaseFire(){
     this.setStage('assets/img/memory/memory_fire.jpg','2003 年 8 月 15 日 · 凌晨','fire');
     MEI.Audio.startFire();
+    MEI.SaveManager.autoSave();
     const b=this.phaseBox;b.innerHTML='';
     b.appendChild(MEI.el('div',{class:'small',style:{'margin-bottom':'8px'}},
       '火光惊醒了她。你只能拼命指挥她，按顺序做能做的事：'));
     const actions=MEI.Data.fireActions;
     this.fireOrder=[];
+    this.fireBtns={};
     const row=MEI.el('div',{style:{display:'flex',gap:'8px','justify-content':'center',flexWrap:'wrap'}});
     MEI.shuffle(actions.slice()).forEach(a=>{
-      row.appendChild(MEI.el('button',{class:'btn',
-        onclick:ev=>this.fireStep(a,ev.currentTarget)},a.label));
+      const btn=MEI.el('button',{class:'btn',
+        onclick:ev=>this.fireStep(a,ev.currentTarget)},a.label);
+      this.fireBtns[a.id]=btn;
+      row.appendChild(btn);
     });
     b.appendChild(row);
+    const undoBtn=MEI.el('button',{class:'btn',id:'m-fire-undo',
+      onclick:()=>this.fireUndo()},'撤回上一步');
+    b.appendChild(undoBtn);
     b.appendChild(MEI.el('div',{id:'fire-log',class:'small',style:{'margin-top':'10px','min-height':'20px'}}));
     this._hintTimer=MEI.Hint.autoTimer('M11');
+    this.fireRenderLog();
+  },
+  fireRenderLog(){
+    const log=MEI.$('#fire-log');
+    if(!log)return;
+    log.textContent=this.fireOrder.length
+      ? '她照做了：'+this.fireOrder.map(x=>x.label).join(' → ')
+      : '还没开始。点下面的按钮按顺序指挥她；错了可以重来，最后一步也能撤回。';
+    const undo=MEI.$('#m-fire-undo');
+    if(undo) undo.disabled=this.fireOrder.length===0;
+  },
+  fireUndo(){
+    if(!this.fireOrder.length)return;
+    const last=this.fireOrder.pop();
+    const btn=this.fireBtns&&this.fireBtns[last.id];
+    if(btn){btn.disabled=false;btn.classList.remove('done');}
+    MEI.Audio.click();
+    MEI.Hint.flash('撤回来了。别慌，慢慢想下一步。',1600);
+    this.fireRenderLog();
   },
   fireStep(a,btn){
     const correct=MEI.Data.fireActions;
@@ -160,17 +173,19 @@ MEI.registerScene({
     if(a.id===correct[i].id){
       this.fireOrder.push(a);btn.disabled=true;btn.classList.add('done');
       MEI.Audio.click();
-      MEI.$('#fire-log').textContent='她照做了：'+this.fireOrder.map(x=>x.label).join(' → ');
+      this.fireRenderLog();
       if(this.fireOrder.length===correct.length){
         MEI.Puzzles.solve('M11',{flash:'她做对了每一件事……可是火，太大了。',
           onSolve:()=>this.fireInevitability()});
       }
     }else{
       MEI.Audio.error();
-      MEI.$('#fire-log').textContent='来不及了，顺序不对，重新来！';
+      /* 点错：仅重置本轮进度，按钮全部恢复，流程不丢 */
+      this.fireOrder=[];
       MEI.$('#m-phasebox').querySelectorAll('button').forEach(x=>{
         x.disabled=false;x.classList.remove('done');});
-      this.fireOrder=[];
+      MEI.Hint.flash('顺序不对，这几步推倒重来，还来得及！',2200);
+      this.fireRenderLog();
     }
   },
   fireInevitability(){

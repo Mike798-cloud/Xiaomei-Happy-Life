@@ -43,6 +43,14 @@ MEI.registerScene({
     this.readSet={};
     MEI.Audio.setBgm('piano');
     this.renderToc();
+    /* 读档恢复 */
+    if(MEI.Puzzles.isSolved('M9')){
+      /* M9 已解：门保持明亮，可直接进入 memory（等同 flashbacks 后状态） */
+      this.lightDoor();
+    }else if(MEI.state.collectibles.diary.length>=MEI.Data.diaryCount){
+      /* 日记已集齐但碎片未解：直接进入排序，不必重翻日记 */
+      setTimeout(()=>this.showM9(),400);
+    }
     this._hintTimer=MEI.Hint.autoTimer('M9');
   },
   onExit(){ if(this._hintTimer)this._hintTimer(); },
@@ -92,46 +100,31 @@ MEI.registerScene({
     MEI.Audio.typ();
   },
 
-  /* ---------- M9 记忆碎片排序 ---------- */
+  /* ---------- M9 记忆碎片排序（健壮排序组件，覆盖不丢片） ---------- */
   showM9(){
     this.m9zone.classList.remove('hidden');
     const z=this.m9zone;z.innerHTML='';
-    z.appendChild(MEI.el('div',{class:'small',style:{'margin-bottom':'6px'}},
-      '读完日记，碎片浮了上来。按发生的先后，把它们排好：'));
-    const slots=MEI.el('div',{style:{display:'flex',gap:'10px','justify-content':'center'}});
-    this.m9slots=[];
-    for(let i=0;i<3;i++){
-      const s=MEI.el('div',{class:'drop-zone m9-slot',style:{width:'120px',minHeight:'54px',
-        'font-size':'13px',padding:'6px'}});s.dataset.slot=i;this.m9slots.push(s);
-      slots.appendChild(s);
-    }
-    const tray=MEI.el('div',{class:'piece-tray','justify-content':'center'});
-    /* 乱序展示 */
-    const shuffled=MEI.shuffle(MEI.Data.memoryPieces.slice());
-    shuffled.forEach(mp=>{
-      const p=MEI.el('div',{class:'drag-piece',style:{'font-size':'13px',padding:'8px 10px',
-        width:'120px','text-align':'center'}},mp.label);
-      MEI.makeDraggable(p,{root:z,onDrop:(s)=>this.dropM9(s,p,mp)});
-      tray.appendChild(p);
-    });
-    z.appendChild(slots);z.appendChild(tray);
-  },
-  dropM9(s,piece,mp){
-    if(!s){ piece.remove();this.showM9();return; }
-    s.textContent=mp.label;s.dataset.id=mp.id;piece.style.display='none';
-    const vals=this.m9slots.map(x=>x.dataset.id||'');
-    if(vals.every(Boolean)){
-      const correct=MEI.Data.memoryPieces.map(x=>x.id).join(',');
-      if(vals.join(',')===correct){
-        this.m9slots.forEach(x=>x.classList.add('correct'));
+    this._m9=MEI.makeOrderPuzzle(z,{
+      items:MEI.Data.memoryPieces.map(mp=>({id:mp.id,label:mp.label})),
+      slotCount:3,
+      correct:MEI.Data.memoryPieces.map(mp=>mp.id),
+      positional:false,
+      puzzleId:'M9',
+      intro:'读完日记，碎片浮了上来。按发生的先后，把它们排好：',
+      wrongLine:'先后顺序还差一点，点错的那一步可以拿回来重放。',
+      onComplete:()=>{
         MEI.Puzzles.solve('M9',{flash:'碎片归位了。那一天，重新浮现在眼前……',
           onSolve:()=>this.flashbacks()});
-      }else{
-        this.m9slots.forEach(x=>x.classList.add('wrong'));
-        MEI.Audio.error();
-        setTimeout(()=>this.showM9(),1000);
       }
-    }
+    });
+  },
+
+  /* 门变亮（闪回结束 / 读档恢复共用） */
+  lightDoor(){
+    const d=MEI.$('#tr-door');if(!d)return;
+    d.style.opacity='1';
+    const w=d.querySelector('.door-warm');
+    if(w) w.style.background='linear-gradient(#ffe9b0,#ffb86b)';
   },
 
   /* 三段闪回（纯对话，无惊吓） */
@@ -145,8 +138,7 @@ MEI.registerScene({
       {speaker:'小美',text:'没关系的，阿树。忘记，又不是你的错呀。'}
     ],()=>{
       /* 门变亮 */
-      const d=MEI.$('#tr-door');d.style.opacity='1';
-      MEI.$('#tr-door .door-warm').style.background='linear-gradient(#ffe9b0,#ffb86b)';
+      this.lightDoor();
       MEI.Hint.flash('门后，是她最想留住的那一天。',4000);
     });
   },

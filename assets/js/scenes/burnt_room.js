@@ -76,7 +76,13 @@ MEI.registerScene({
       onclick:()=>this.pokeAsh(world)}));
 
     this.world=world;
+    /* 读档恢复：从已收集文件重建“已解码/已打开”，避免文件树回退为乱码、
+       通往真相的门把“已找回 N 份”重新算成 0。 */
     this.decoded={}; this.opened={};
+    (MEI.state.collectibles.files||[]).forEach(id=>{
+      this.decoded[id]=true; this.opened[id]=true;
+    });
+    if(MEI.state.collectibles.files.includes('f6')) MEI.addItem('letter');
     MEI.Audio.setBgm('drone');
     this._hintTimer=MEI.Hint.autoTimer('M5');
   },

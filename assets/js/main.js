@@ -127,7 +127,11 @@ MEI.openSettings=function(){
       check('减少惊吓（弱化突脸）','lessScare')),
     MEI.el('div',{class:'modal-footer'},
       MEI.el('button',{class:'btn btn-primary',onclick:()=>{
+        MEI.SaveManager.persistSettings();
         MEI.SaveManager.autoSave();bd.remove();}},'完成'))));
+  /* 任意滑块/复选/单选改动即写入独立设置（标题页同样生效） */
+  bd.addEventListener('input',()=>MEI.SaveManager.persistSettings());
+  bd.addEventListener('change',()=>MEI.SaveManager.persistSettings());
   layer.appendChild(bd);
 };
 
@@ -213,6 +217,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   /* 隐藏 boot loading，进入标题 */
   const bl=MEI.$('#boot-loading');if(bl)bl.remove();
+  /* 先恢复独立设置（含标题页曾保存的音量/光效/CRT/提示频率） */
+  MEI.SaveManager && MEI.SaveManager.loadSettings();
   MEI.applySettings();
   MEI.SceneController.goto('title',{transition:'instant'});
 });

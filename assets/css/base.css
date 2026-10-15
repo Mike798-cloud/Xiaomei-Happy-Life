@@ -110,3 +110,40 @@ body.no-motion *{animation-duration:.001s !important;transition-duration:.001s !
 @media(prefers-reduced-motion:reduce){
   .sh-attention{animation:none;outline:1px solid rgba(255,225,150,.75);}
 }
+
+/* ---------- 通用排序/拼字谜题（makeOrderPuzzle） ---------- */
+.pz-controls{display:flex;gap:10px;justify-content:center;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+.pz-controls .btn{padding:5px 14px;font-size:13px;}
+.pz-slots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.pz-slot{width:104px;min-height:54px;padding:6px;border-radius:9px;
+  border:1.5px dashed rgba(198,178,138,.55);background:rgba(255,255,255,.07);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  transition:background .2s,border-color .2s,box-shadow .2s;}
+.pz-slot .pz-tag{font-size:11px;color:rgba(220,206,170,.7);}
+.pz-slot .pz-in{font-size:13px;color:#2a2418;font-weight:600;text-align:center;line-height:1.35;}
+.pz-slot.pz-filled{background:rgba(236,228,208,.95);border-style:solid;border-color:rgba(120,96,60,.5);}
+.pz-slot.over{box-shadow:0 0 0 2px rgba(255,206,100,.55);background:rgba(255,225,160,.18);}
+.pz-slot.pz-fixed{background:rgba(190,226,190,.96);border:1.5px solid #4fae5e;}
+.pz-slot.pz-fixed .pz-tag{color:#2f6b38;}
+.pz-slot.pz-bad{background:rgba(228,168,160,.92);border:1.5px solid #c55a52;}
+.pz-tray{margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+  min-height:40px;padding:10px;border-radius:10px;}
+.pz-card{cursor:grab;user-select:none;-webkit-user-select:none;border-radius:8px;
+  touch-action:none;
+  background:rgba(240,233,216,.97);color:#2a2418;border:1px solid rgba(120,96,60,.4);
+  padding:7px 11px;font-size:13px;line-height:1.4;text-align:center;max-width:170px;
+  box-shadow:0 2px 5px rgba(0,0,0,.25);transition:box-shadow .15s,transform .15s;}
+.pz-slot{touch-action:manipulation;}
+.pz-card:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(0,0,0,.32);}
+.pz-card.pz-selected{box-shadow:0 0 0 2px rgba(255,206,100,.95);border-color:#d8a93a;}
+.pz-card.pz-placed{display:none;}
+.pz-card.pz-done{opacity:.7;cursor:default;}
+.pz-card.dragging{cursor:grabbing;opacity:.85;}
+.pz-intro{text-align:center;margin-bottom:8px;}
+@media(prefers-reduced-motion:reduce){.pz-card:hover{transform:none;}}
+/* 窄屏/触屏：两列排布，不溢出、可点 */
+@media(max-width:640px){
+  .pz-slot{width:calc(50% - 8px);}
+  .pz-card{max-width:calc(50% - 8px);}
+  .pz-controls .btn{padding:6px 12px;}
+}

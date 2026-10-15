@@ -64,9 +64,11 @@ MEI.registerScene({
     const p=MEI.$('#finale-panel');p.innerHTML='';
     p.appendChild(MEI.el('div',{class:'small',style:{'margin-bottom':'10px'}},
       '好好地，和她告别。按顺序完成四件事：'));
-    this.ritual=0;
+    /* 读档恢复：回到上次进行到的仪式步骤，不从头再演、也不丢失任何道具 */
+    this.ritual=MEI.state.ritualStep||0;
     this.ritualBox=MEI.el('div',{class:'ritual-box'});
     p.appendChild(this.ritualBox);
+    if(this.ritual>0) MEI.Hint.flash('接着刚才的告别继续就好。');
     this.ritualStep();
   },
   ritualStep(){
@@ -78,7 +80,7 @@ MEI.registerScene({
       ()=>{ b.appendChild(MEI.el('div',{style:{width:'60px',height:'60px',margin:'0 auto'},
         html:MEI.pixelIcons.flower}));
         b.appendChild(MEI.el('button',{class:'btn btn-primary',
-          onclick:()=>{MEI.removeItem('flower');MEI.Audio.candleLit();
+          onclick:()=>{MEI.state.flags.flowerOffered=true;MEI.Audio.candleLit();
             MEI.Hint.flash('你把小白花轻轻放在她面前。');this.nextRitual();}},'② 献上那朵小白花')); },
       ()=>{ b.appendChild(MEI.el('button',{class:'btn btn-primary',
         onclick:()=>{
@@ -101,5 +103,8 @@ MEI.registerScene({
     ];
     steps[this.ritual]();
   },
-  nextRitual(){ this.ritual++; setTimeout(()=>this.ritualStep(),900); }
+  nextRitual(){ this.ritual++;
+    MEI.state.ritualStep=this.ritual;
+    MEI.SaveManager&&MEI.SaveManager.autoSave();
+    setTimeout(()=>this.ritualStep(),900); }
 });

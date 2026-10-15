@@ -2,6 +2,7 @@
 window.MEI = window.MEI || {};
 const KEY_AUTO='mei_save_auto';
 const KEY_SLOT=n=>'mei_save_'+n;
+const KEY_SETTINGS='mei_settings';
 
 MEI.SaveManager = {
   _pack(slot){
@@ -21,6 +22,9 @@ MEI.SaveManager = {
   },
 
   autoSave(){
+    /* 标题为安全枢纽：任何在标题态的自动保存都不覆盖真实存档点
+       （返回标题后内存态是“中期数据+scene=title”，不能写成存档点）。 */
+    try{ if(MEI.state.scene==='title') return; }catch(e){}
     try{ localStorage.setItem(KEY_AUTO,JSON.stringify(this._pack('auto'))); }
     catch(e){ /* 存储满或被禁用，静默 */ }
   },
@@ -39,9 +43,10 @@ MEI.SaveManager = {
     if(!data || !data.state) return false;
     const d=MEI.defaultState(), st=data.state;
     /* 嵌套对象逐键补全，防止旧档/损坏档字段缺失 */
-    ['flags','collectibles','settings','stats'].forEach(k=>{
+    ['flags','collectibles','settings','stats','solved'].forEach(k=>{
       if(st[k] && typeof st[k]==='object') st[k]=Object.assign({},d[k],st[k]);
     });
+    if(!st.solved||typeof st.solved!=='object') st.solved={};
     if(!Array.isArray(st.inventory)) st.inventory=d.inventory.slice();
     if(!Array.isArray(st.readTexts)) st.readTexts=d.readTexts.slice();
     MEI.state = Object.assign(d,st);
@@ -64,6 +69,20 @@ MEI.SaveManager = {
   hasAny(){
     return !!(this._read(KEY_AUTO)||this._read(KEY_SLOT(1))||
       this._read(KEY_SLOT(2))||this._read(KEY_SLOT(3)));
+  },
+  /* 设置独立持久化（标题页改设置也会落盘）。只写设置键，
+     不触碰进度档，因此“标题态不写进度”的守卫仍然成立。 */
+  persistSettings(){
+    try{ localStorage.setItem(KEY_SETTINGS,JSON.stringify(MEI.state.settings)); }catch(e){}
+  },
+  loadSettings(){
+    try{
+      const d=localStorage.getItem(KEY_SETTINGS);
+      if(!d)return;
+      const o=JSON.parse(d);
+      if(o&&typeof o==='object')
+        MEI.state.settings=Object.assign({},MEI.state.settings,o);
+    }catch(e){}
   },
   clearAll(){
     [KEY_AUTO,KEY_SLOT(1),KEY_SLOT(2),KEY_SLOT(3)]

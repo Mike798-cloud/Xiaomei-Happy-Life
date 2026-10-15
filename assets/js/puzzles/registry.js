@@ -2,17 +2,18 @@
 window.MEI = window.MEI || {};
 
 MEI.Puzzles = {
-  solved:{},
-  isSolved(id){ return !!this.solved[id]; },
+  /* 完成状态存放在 MEI.state.solved，随存档持久化；保留 solved 直读接口 */
+  get solved(){ return MEI.state.solved; },
+  isSolved(id){ return !!MEI.state.solved[id]; },
   solve(id,opts={}){
-    if(this.solved[id]) return;
-    this.solved[id]=true;
+    if(MEI.state.solved[id]) return;
+    MEI.state.solved[id]=true;
     MEI.Audio.unlock();
     if(opts.flash) MEI.Hint.flash(opts.flash,2600);
     MEI.SaveManager.autoSave();
     if(opts.onSolve) setTimeout(opts.onSolve,300);
   },
-  reset(){ this.solved={}; }
+  reset(){ MEI.state.solved={}; }
 };
 
 /* 通用：数字/口令输入弹窗，返回用户输入 */

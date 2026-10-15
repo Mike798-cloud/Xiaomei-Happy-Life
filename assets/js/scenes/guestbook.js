@@ -8,9 +8,12 @@ MEI.registerScene({
   render(root){
     const world=MEI.el('div',{class:'surface-world'});
     root.appendChild(world);
-    this.page=0; this.perPage=4; this.flippedAll=false;
+    const m3done=MEI.Puzzles.isSolved('M3');
+    this.page=0; this.perPage=4; this.flippedAll=m3done;
     this.buildWindow(world);
     MEI.Audio.setBgm('musicbox-slow');
+    /* 读档恢复：M3 已解 → 不重弹拼字，直接回到 afterPuzzle 状态（跳转框保持激活） */
+    if(m3done) this.afterPuzzle();
   },
 
   buildWindow(world){
@@ -83,6 +86,10 @@ MEI.registerScene({
       entry.appendChild(main);
       p.appendChild(entry);
     });
+    /* M3 已解时，“她认出你”的留言固定渲染在最后一页末尾，
+       翻页再翻回不会消失（随页重建，而非一次性 append）。 */
+    if(this.page===this.totalPages()-1 && MEI.Puzzles.isSolved('M3'))
+      p.appendChild(this.recognitionEntry());
     MEI.$('#gb-page-ind').textContent=`${this.page+1}/${this.totalPages()}`;
     const stat=MEI.$('#gb-stat');
     if(stat) stat.textContent=`共 ${MEI.Data.guestbook.length} 条留言 · 第 ${this.page+1} / ${this.totalPages()} 页`;
@@ -105,45 +112,28 @@ MEI.registerScene({
     };
   },
 
-  /* ---------- M3 拼字 ---------- */
+  /* ---------- M3 拼字（健壮排序组件，覆盖不丢字） ---------- */
   buildPuzzle(){
     const zone=this.m3zone;
     zone.classList.remove('hidden');zone.innerHTML='';
-    zone.appendChild(MEI.el('div',{class:'small',style:{'margin-bottom':'6px'}},
-      '最新的留言被人划改过。碎纸片压在下面，还能拼回去。'));
-    const slots=MEI.el('div',{style:{display:'flex',gap:'16px','justify-content':'center'}});
-    this.dropSlots=[];
-    for(let i=0;i<2;i++){
-      const z=MEI.el('div',{class:'drop-zone',style:{width:'90px','text-align':'center',
-        'font-size':'24px',minHeight:'44px',padding:'6px'}});
-      this.dropSlots.push(z);slots.appendChild(z);
-    }
-    const tray=MEI.el('div',{class:'piece-tray','justify-content':'center'});
-    MEI.shuffle(['逃','快','来']).forEach(ch=>{
-      const p=MEI.el('div',{class:'drag-piece',style:{'font-size':'18px',padding:'6px 14px'}},ch);
-      MEI.makeDraggable(p,{root:zone,onDrop:(z)=>this.dropPiece(z,p,ch)});
-      tray.appendChild(p);
-    });
-    zone.appendChild(slots);zone.appendChild(tray);
     MEI.$('#gb-hint').textContent='拼出被划改前的两个字';
-  },
-  dropPiece(z,piece,ch){
-    if(!z){ this.buildPuzzle();return; }
-    z.textContent=ch;z.dataset.char=ch;piece.style.display='none';
-    const vals=this.dropSlots.map(x=>x.dataset.char||'');
-    if(vals.join('')==='快来'){
-      this.dropSlots.forEach(x=>x.classList.add('correct'));
-      MEI.Puzzles.solve('M3',{flash:'碎纸片拼出了最早的两个字：「快来」。',
-        onSolve:()=>this.afterPuzzle()});
-    }else if(vals.every(Boolean)){
-      this.dropSlots.forEach(x=>x.classList.add('wrong'));
-      MEI.Audio.error();
-      MEI.Hint.flash('「快逃」是后来改的，下面还压着别的。');
-      setTimeout(()=>this.buildPuzzle(),1100);
-    }
+    this._m3=MEI.makeOrderPuzzle(zone,{
+      items:[{id:'kuai',label:'快'},{id:'lai',label:'来'},{id:'tao',label:'逃'}],
+      slotCount:2,
+      correct:['kuai','lai'],
+      positional:false,
+      puzzleId:'M3',
+      intro:'最新的留言被人划改过。碎纸片压在下面，还能拼回去。',
+      wrongLine:'「快逃」是后来改的，下面还压着别的。',
+      onComplete:()=>{
+        MEI.Puzzles.solve('M3',{flash:'碎纸片拼出了最早的两个字：「快来」。',
+          onSolve:()=>this.afterPuzzle()});
+      }
+    });
   },
 
-  afterPuzzle(){
+  /* “她认出你”留言节点（随最后一页渲染，可被反复重建而不丢失） */
+  recognitionEntry(){
     const g=MEI.Data.guestbookRecognition;
     const e=MEI.el('div',{class:'gb-entry recognition'});
     e.appendChild(MEI.el('div',{class:'gb-ava',style:{background:'#3a1a2a'}},'她'));
@@ -154,11 +144,17 @@ MEI.registerScene({
       MEI.el('span',{class:'gb-ip'},'来自 127.0.0.1')));
     m.appendChild(MEI.el('div',{class:'gb-body'},g.body));
     e.appendChild(m);
-    this.paper.appendChild(e);
-    this.paper.scrollTop=this.paper.scrollHeight;
+    return e;
+  },
+
+  afterPuzzle(){
     MEI.flag('meiRecognized',true);
-    /* 激活跳转框 */
+    /* 激活跳转框（M3 已解/M4 相关态不回退） */
     this.jumpInput.disabled=false;this.jumpBtn.disabled=false;
+    /* 落最后一页：识别留言由 renderPage 追加，翻页后再翻回仍在 */
+    this.page=this.totalPages()-1;
+    this.renderPage();
+    this.paper.scrollTop=this.paper.scrollHeight;
     MEI.Hint.flash('……她认出你了。',3600);
     MEI.$('#gb-hint').textContent='第 113 条留言，藏在编号跳转里。';
   },

@@ -92,3 +92,138 @@ MEI.makeDraggable = function(piece,{onDrop,root}={}){
     window.addEventListener('pointerup',up);
   });
 };
+
+/* ============================================================
+   makeOrderPuzzle — 健壮的“排序/拼字”谜题组件（M10/M9/M3 共用）
+   杜绝死锁：每槽至多一件，占用时拖入=交换（步骤永不丢失）；
+   点槽取回；卡片点击→点槽（或再点卡片自动填空）等价输入；
+   常驻“重排/帮助”；positional 模式下放对即时变绿。
+   items:[{id,label}]；slotCount；correct:[id...]（长度=slotCount）
+   返回 {reset, setState, el}
+   ============================================================ */
+MEI.makeOrderPuzzle = function(container,opts){
+  opts = opts||{};
+  const items=opts.items, slotCount=opts.slotCount, correct=opts.correct;
+  let loc={};                       // slotIndex -> itemId
+  let selected=null, done=false, wrongShown=false;
+  const byId=id=>items.find(x=>x.id===id);
+
+  const controls=MEI.el('div',{class:'pz-controls'},
+    MEI.el('button',{class:'btn pz-reset',type:'button'},opts.resetLabel||'重排一次'),
+    MEI.el('button',{class:'btn pz-help',type:'button'},'？ 帮助'));
+  const slotsRow=MEI.el('div',{class:'pz-slots'});
+  const slots=[];
+  for(let i=0;i<slotCount;i++){
+    const z=MEI.el('div',{class:'drop-zone pz-slot','data-slot':i},
+      MEI.el('span',{class:'pz-tag'},opts.slotTag?opts.slotTag(i+1):('第'+(i+1)+'步')));
+    slots.push(z);slotsRow.appendChild(z);
+  }
+  const tray=MEI.el('div',{class:'pz-tray'});
+  const cards={};
+  items.forEach(it=>{
+    const c=MEI.el('div',{class:'pz-card','data-id':it.id},it.label);
+    cards[it.id]=c; tray.appendChild(c);
+    MEI.makeDraggable(c,{root:container,onDrop:(z)=>{
+      if(done)return;
+      if(z){ place(it.id,+z.dataset.slot); }
+      render();
+    }});
+    c.addEventListener('click',()=>{
+      if(done)return;
+      if(selected===it.id){ /* 再点一次：自动填下一个空槽 */
+        const empty=firstEmpty(); if(empty!=null){ place(it.id,empty); selected=null; render(); }
+      }else{ selected=it.id; render(); }
+    });
+  });
+
+  slots.forEach((z,i)=>z.addEventListener('click',()=>{
+    if(done)return;
+    const cur=loc[i];
+    if(selected!=null){ place(selected,i); selected=null; }
+    else if(cur){ delete loc[i]; }   /* 点已放置 → 取回 */
+    render();
+  }));
+
+  function firstEmpty(){ for(let i=0;i<slotCount;i++) if(loc[i]==null)return i; return null; }
+  /* 放置：若该槽已有，自动把被替换者退回（交换，永不丢失） */
+  function place(id,slot){
+    /* 若该步骤原本在别的槽，先清掉旧槽 */
+    for(let k in loc) if(loc[k]===id) delete loc[k];
+    loc[slot]=id;
+    if(!opts.positional) return;
+  }
+  function vals(){ const a=[];for(let i=0;i<slotCount;i++)a.push(loc[i]||null);return a; }
+
+  function check(){
+    const v=vals();
+    if(opts.positional){
+      slots.forEach((z,i)=>z.classList.toggle('pz-fixed',v[i]===correct[i]));
+    }
+    if(v.every(x=>x!=null)){
+      if(v.join('|')===correct.join('|')){
+        done=true; slots.forEach(z=>z.classList.add('pz-fixed'));
+        selected=null;
+        Object.values(cards).forEach(c=>c.classList.add('pz-done'));
+        MEI.Audio.candleLit();
+        if(opts.onComplete) setTimeout(opts.onComplete,350);
+      }else{
+        if(!opts.positional) slots.forEach(z=>z.classList.add('pz-bad'));
+        MEI.Audio.error();
+        if(!wrongShown){ wrongShown=true;
+          MEI.Hint.flash(opts.wrongLine||'顺序还差一点，点错的那一步可以拿回来重放。',2600);
+          setTimeout(()=>{wrongShown=false;slots.forEach(z=>z.classList.remove('pz-bad'));},1200);
+        }
+      }
+    }
+  }
+
+  function render(){
+    /* 清槽内容（保留 tag） */
+    slots.forEach((z,i)=>{
+      Array.from(z.querySelectorAll('.pz-in')).forEach(n=>n.remove());
+      z.classList.remove('pz-bad','pz-fixed');
+      const id=loc[i];
+      if(id!=null){
+        z.classList.add('pz-filled');
+        z.appendChild(MEI.el('span',{class:'pz-in'},byId(id).label));
+      }else z.classList.remove('pz-filled');
+    });
+    /* 卡片：在槽里的从托盘移走（视觉上），其余在托盘 */
+    items.forEach(it=>{
+      const inSlot=Object.values(loc).includes(it.id);
+      const c=cards[it.id];
+      c.classList.toggle('pz-placed',inSlot);
+      c.classList.toggle('pz-selected',selected===it.id);
+      c.style.display=inSlot?'none':'';
+      if(!inSlot && c.parentNode!==tray) tray.appendChild(c);
+    });
+    check();
+  }
+
+  function reset(preshuffle){
+    loc={};selected=null;done=false;wrongShown=false;
+    if(preshuffle!==false){ MEI.shuffle(items); }
+    /* 重建卡片标签顺序（DOM 重排） */
+    items.forEach(it=>tray.appendChild(cards[it.id]));
+    render();
+  }
+  /* 直接恢复（读档用）：传入槽位 id 数组 */
+  function setState(v){
+    loc={};v.forEach((id,i)=>{if(id)loc[i]=id;});
+    render();
+  }
+  function isDone(){return done;}
+
+  controls.querySelector('.pz-reset').addEventListener('click',()=>{ if(!done){MEI.Audio.click();reset();} });
+  controls.querySelector('.pz-help').addEventListener('click',()=>{
+    MEI.Audio.click();
+    if(opts.puzzleId&&MEI.Hint.puzzle) MEI.Hint.puzzle(opts.puzzleId);
+  });
+
+  if(opts.intro) container.appendChild(MEI.el('div',{class:'pz-intro small'},opts.intro));
+  container.appendChild(controls);
+  container.appendChild(slotsRow);
+  container.appendChild(tray);
+  reset(true);
+  return {reset,setState,isDone,el:container,get loc(){return loc;}};
+};

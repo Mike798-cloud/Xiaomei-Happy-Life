@@ -119,13 +119,17 @@ MEI.doCemetery=function(box){
   const flower=MEI.el('div',{class:'offer-item',html:MEI.pixelIcons.flower});
   const candle=MEI.el('div',{class:'offer-item',html:MEI.pixelIcons.candle});
   offer.appendChild(flower);offer.appendChild(candle);
-  flower.onclick=()=>{ flowerDone=true;flower.classList.add('placed');
-    MEI.Audio.candleLit();check(); };
-  candle.onclick=()=>{ candleDone=true;candle.classList.add('placed');
-    MEI.Audio.matchStrike();setTimeout(()=>MEI.Audio.candleLit(),200);check(); };
+  /* 阻止按钮点击冒泡到墓地基调（box.onclick 负责推进），
+     否则点完最后一样（锁释放）会立刻被带进下一屏，缺少停顿。 */
+  flower.onclick=(ev)=>{ flowerDone=true;flower.classList.add('placed');
+    MEI.Audio.candleLit();ev.stopPropagation();check(); };
+  candle.onclick=(ev)=>{ candleDone=true;candle.classList.add('placed');
+    MEI.Audio.matchStrike();setTimeout(()=>MEI.Audio.candleLit(),200);
+    ev.stopPropagation();check(); };
   function check(){ if(flowerDone&&candleDone){
     box.classList.remove('cemetery-lock');
-    MEI.Hint.flash('花放好了，蜡烛也亮了。她不会再冷了。',3200); } }
+    /* 两样都放下后，先把这半拍留给玩家，再点一次才继续 */
+    MEI.Hint.flash('花放好了，蜡烛也亮了。她不会再冷了。（点一下，再往前走）',3200); } }
 };
 
 /* ---------- 感谢游玩页（统一函数，按结局 kind 传入不同文案） ---------- */
