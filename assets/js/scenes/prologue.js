@@ -76,6 +76,8 @@ MEI.mailArchive = [
   body:'系统通知：\n\n你收藏的好友主页「阿树的小窝」（ashu_1600.chatroom.cn）已于 2003-08-16 之后停止解析。\n\n该页无法显示。'}
 ];
 
+[MEI.mailInbox,MEI.mailArchive].forEach(a=>a.forEach(m=>m._initialRead=m.read));
+
 MEI.registerScene({
   id:'prologue',
   label:'序章 · 旧邮箱',
@@ -83,6 +85,7 @@ MEI.registerScene({
     root.appendChild(MEI.el('div',{class:'prologue-world',
       style:{width:'100%',height:'100%',background:'#0e1116',
         display:'flex','flex-direction':'column'}}));
+    this.listEl=null;this.viewEl=null;
     this.renderLogin(root);
   },
 
@@ -111,7 +114,7 @@ MEI.registerScene({
     world.innerHTML='';
     this.root=root;
     this.currentFolder='inbox';
-    this.openMailId=null;
+    this.openMailId=null;world.dataset.mobilePane='folders';
 
     /* 顶部浏览器栏 */
     world.appendChild(MEI.el('div',{class:'mail-browserbar'},
@@ -182,6 +185,7 @@ MEI.registerScene({
   selectFolder(id){
     MEI.Audio.click();
     this.currentFolder=id;
+    MEI.$('.prologue-world',this.root).dataset.mobilePane='list';
     MEI.$$('.mail-folder').forEach(x=>x.classList.toggle('active',x.dataset.folder===id));
     this.openMailId=null;
     this.refreshList();
@@ -194,12 +198,12 @@ MEI.registerScene({
     if(this.currentFolder==='inbox') return MEI.mailInbox.filter(m=>!m.junk);
     if(this.currentFolder==='sent') return [
       {id:'s1',from:'ashu_tree@oldmail.com',to:'xiaomei_1600@oldmail.com',sub:'Re: 你还在吗？',
-       date:'2003-08-15 22:50',read:true,body:'小美，我刚下班，马上拨号上来。等我。——阿树'},
+       date:'2003-08-15 17:50',read:true,body:'小美，家里今天要搬走了，电脑马上就得装箱。我不知道新家什么时候能上网，你别一直等。——阿树'},
       {id:'s2',from:'ashu_tree@oldmail.com',to:'xiaomei_1600@oldmail.com',sub:'？？',
-       date:'2003-08-15 23:12',read:true,body:'？'}];
+       date:'2003-08-22 23:12',read:true,body:'（搬家后重新连上网络时，他试着发了一封邮件，没有收到回复。）'}];
     if(this.currentFolder==='draft') return [
-      {id:'d1',from:'（草稿）',sub:'（未命名）',date:'2003-08-15 21:30',read:true,
-       body:'小美，对不起，我今晚可能要加班……\n（草稿只写到这里，后面是空的）'}];
+      {id:'d1',from:'（草稿）',sub:'（未命名）',date:'2003-08-15 16:30',read:true,
+       body:'小美，对不起，爸爸临时说今天搬家，我晚上可能上不了线……\n（草稿只写到这里，后面是空的）'}];
     if(this.currentFolder==='trash') return [
       {id:'t1',from:'（已删除）',sub:'2003-08-16 03:?? 的一封邮件',date:'2003-08-16 03:00',read:true,
        body:'（这封邮件在回收站里，但是打开是乱码：ÀÎÊÔ ······）'}];
@@ -216,6 +220,7 @@ MEI.registerScene({
     if(!this.listEl) return;
     const list=this.listEl;list.innerHTML='';
     list.classList.toggle('list-archived',this.currentFolder==='archive');
+    list.appendChild(MEI.el('button',{class:'btn mobile-mail-back',onclick:()=>{MEI.$('.prologue-world',this.root).dataset.mobilePane='folders';}},'◀ 文件夹'));
     list.appendChild(MEI.el('div',{class:'ml-head'},
       MEI.el('span',{class:'ml-star'},'★'),
       MEI.el('span',{class:'ml-ava'}),
@@ -263,6 +268,7 @@ MEI.registerScene({
     const m=this.currentMails().find(x=>x.id===this.openMailId);
     if(!m){ this.viewEl.innerHTML='';return; }
     this.viewEl.innerHTML='';
+    this.viewEl.appendChild(MEI.el('button',{class:'btn mobile-mail-back',onclick:()=>{MEI.$('.prologue-world',this.root).dataset.mobilePane='list';}},'◀ 邮件列表'));
     this.viewEl.appendChild(MEI.el('div',{class:'mv-head'},
       MEI.el('div',{class:'mv-subject'},m.sub),
       MEI.el('div',{class:'mv-meta'},
@@ -287,6 +293,7 @@ MEI.registerScene({
   openMail(m){
     MEI.Audio.click();
     this.openMailId=m.id;
+    MEI.$('.prologue-world',this.root).dataset.mobilePane='view';
     this.refreshList();
     this.refreshView();
   },
@@ -302,11 +309,11 @@ MEI.registerScene({
     root.appendChild(ov);
     const tips=['正在连接 16300 …','正在验证用户名和密码…','正在加载个人主页…','就快好了…'];
     let p=0;
-    const iv=setInterval(()=>{
+    const iv=MEI.Clock.setInterval(()=>{
       p+=MEI.rand(6,16);
       const f=MEI.$('#dial-fill'); if(f) f.style.width=Math.min(p,100)+'%';
       const t=MEI.$('#dial-tip'); if(t) t.textContent=tips[Math.min(Math.floor(p/26),3)];
-      if(p>=100){ clearInterval(iv); setTimeout(()=>this.welcome(root,ov),500); }
+      if(p>=100){ MEI.Clock.clearInterval(iv); MEI.Clock.setTimeout(()=>this.welcome(root,ov),500); }
     },260);
   },
 

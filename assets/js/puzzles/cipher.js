@@ -59,12 +59,12 @@ MEI.Cipher = {
       clicks=5; MEI.Audio.unlock();
       const p=MEI.Cipher.decrypt(cipherText);
       MEI.$('#cw-out').textContent=p;
-      setTimeout(()=>success(p),450);
+      MEI.Clock.setTimeout(()=>success(p),450);
     };
     MEI.$('#cw-cancel').onclick=()=>onResult(null);
 
     let done=false;
     function success(p){ if(done)return; done=true;
-      setTimeout(()=>onResult(p),700); }
+      MEI.Clock.setTimeout(()=>onResult(p),700); }
   }
 };

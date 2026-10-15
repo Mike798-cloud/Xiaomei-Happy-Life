@@ -36,6 +36,7 @@ MEI.registerScene({
   label:'第四幕 · 烧焦的房间',
 
   render(root){
+    this.pcOpen=false;this._demoBusy=false;this._ashN=0;this.current=null;
     const world=MEI.el('div',{class:'depth-world br-photo',id:'br-world'});
     root.appendChild(world);
 
@@ -84,6 +85,10 @@ MEI.registerScene({
     });
     if(MEI.state.collectibles.files.includes('f6')) MEI.addItem('letter');
     MEI.Audio.setBgm('drone');
+    if(MEI.state.purification>=50)world.classList.add('purified');
+    if(MEI.state.purification>=60)MEI.$('#br-ghost').classList.remove('show');
+    if(MEI.state.purification>=80)MEI.Audio.setBgm('piano');
+    if(MEI.flag('returnToFinale'))world.appendChild(MEI.el('button',{class:'btn room-return',onclick:()=>MEI.SceneController.goto('finale')},'回到她身边'));
     this._hintTimer=MEI.Hint.autoTimer('M5');
   },
   onExit(){ if(this._hintTimer)this._hintTimer();
@@ -201,6 +206,7 @@ MEI.registerScene({
     MEI.$('#sign-body').innerHTML='<div class="ds-tri">⚠</div><div>危险</div><div>勿入</div>';
   },
   tryDoor(){
+    if(MEI.flag('returnToFinale')){MEI.SceneController.goto('finale');return;}
     const opened=Object.keys(this.opened).length;
     if(opened>=7){
       MEI.SceneController.goto('truth',{transition:'fade'});
@@ -227,6 +233,7 @@ MEI.registerScene({
         .map(m=>MEI.el('span',{class:'pc-menu'},m))));
     /* 工具栏 */
     overlay.appendChild(MEI.el('div',{class:'pc-toolbar'},
+      MEI.el('button',{class:'btn pc-tree-toggle',onclick:()=>overlay.classList.toggle('tree-visible')},'文件列表'),
       MEI.el('button',{class:'btn',onclick:()=>MEI.Hint.puzzle('M5')},'? 帮助'),
       MEI.el('span',{class:'tb-sep'}),
       MEI.el('span',{class:'small'},'地址：C:\\我的文档\\快乐家园'),
@@ -283,9 +290,12 @@ MEI.registerScene({
   },
 
   selectFile(f){
+    MEI.$('#pc-overlay')?.classList.remove('tree-visible');
     this.current=f.id;
     this.renderTree();
     const v=this.viewEl;
+    if(f.id==='f8'&&MEI.Puzzles.isSolved('M6')){this.decoded.f8=true;this.showDoc(f);return;}
+    if(this.opened[f.id]){if(f.kind==='source')this.showSource(f);else this.showDoc(f);return;}
     if(!this.decoded[f.id]){ this.showDecoder(f); return; }
     if(f.kind==='lock-source'){ return this.openSourceLocked(f); }
     if(f.kind==='lock-morse'){ return this.openMorseLocked(f); }
@@ -301,7 +311,7 @@ MEI.registerScene({
     v.appendChild(holder);
     MEI.Cipher.renderDecoder(holder,f.enc,plain=>{
       if(plain==null){ return; }
-      this.decoded[f.id]=true;
+      this.decoded[f.id]=true;MEI.Puzzles.solve('M5');
       this.renderTree();
       MEI.Hint.flash(`文件名回来了：${f.name}`);
       this.afterDecode(f);
@@ -392,22 +402,23 @@ MEI.registerScene({
   },
   /* 用蜡烛的明灭把 SOS「演」一遍——纯视觉，不依赖声音 */
   playMorseDemo(){
-    if(this._demoBusy)return; this._demoBusy=true;
-    const flame=MEI.$('#morse-flame');
-    const seq=[['.',180],['.',180],['.',180],[0,620],['-',460],['-',460],['-',460],[0,620],['.',180],['.',180],['.',180]];
-    let p=Promise.resolve();
-    seq.forEach(([on,ms])=>{
-      p=p.then(()=>new Promise(res=>{
-        if(on){ flame.classList.add('on'); MEI.Audio.click(); }
-        setTimeout(()=>{ flame.classList.remove('on'); res(); },ms);
-      }));
-    });
-    p.then(()=>{ this._demoBusy=false; });
+    if(this._demoBusy)return;this._demoBusy=true;
+    const flame=MEI.$('#morse-flame'),symbols='...---...';
+    let i=0;
+    const next=()=>{
+      if(!flame.isConnected){this._demoBusy=false;return;}
+      if(i===symbols.length){this._demoBusy=false;return;}
+      const symbol=symbols[i++];flame.classList.add('on');MEI.Audio.click();
+      MEI.Clock.setTimeout(()=>{
+        flame.classList.remove('on');
+        MEI.Clock.setTimeout(next,i%3===0?620:180);
+      },symbol==='.'?180:540);
+    };next();
   },
   morseKey(k){
     const flame=MEI.$('#morse-flame');
     flame.classList.add('on');
-    setTimeout(()=>flame.classList.remove('on'), k==='.'?180:460);
+    MEI.Clock.setTimeout(()=>flame.classList.remove('on'), k==='.'?180:460);
     if(k==='.')MEI.Audio.morseDot();else MEI.Audio.morseDash();
     this.morseBuf+=k;
     MEI.$('#morse-out').textContent=this.morseBuf.replace(/\./g,'·').replace(/-/g,'—');

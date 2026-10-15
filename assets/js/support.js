@@ -133,6 +133,7 @@
     }
     if(!overlay)buildOverlay();
     overlay.hidden=false;
+    if(window.MEI&&MEI.Clock)MEI.Clock.setPaused('support',true);
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){overlay.classList.add('is-open');});
     });
@@ -142,7 +143,7 @@
   function hide(){
     if(!overlay)return;
     overlay.classList.remove('is-open');
-    setTimeout(function(){overlay.hidden=true;},380);
+    setTimeout(function(){overlay.hidden=true;if(window.MEI&&MEI.Clock)MEI.Clock.setPaused('support',false);},380);
   }
   function isOpen(){
     return !!overlay&&!overlay.hidden&&overlay.classList.contains('is-open');

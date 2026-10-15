@@ -14,7 +14,9 @@ MEI.registerScene({
     const panel=MEI.el('div',{class:'finale-panel',id:'finale-panel'});
     world.appendChild(fig);world.appendChild(panel);
     MEI.Audio.setBgm('finale');
-    this.intro();
+    MEI.flag('reachedFinale',true);
+    if(MEI.Puzzles.isSolved('M12')){MEI.Clock.setTimeout(()=>MEI.SceneController.goto('ending_remember'),40);return;}
+    if(MEI.flag('returnToFinale')){MEI.flag('returnToFinale',false);this.showChoices();}else this.intro();
   },
 
   intro(){
@@ -47,12 +49,16 @@ MEI.registerScene({
         MEI.Audio.click();handlers[c.id](); };
       p.appendChild(btn);
     });
+    if(!canTrue)p.appendChild(MEI.el('button',{class:'btn finale-back',onclick:()=>{
+      MEI.flag('returnToFinale',true);MEI.SceneController.goto('burnt_room');
+    }},'有东西落在房间里了，我回去找找'));
   },
 
   missingList(){
     const files=MEI.state.collectibles.files.length;
     const miss=[];
-    if(files<10) miss.push(`修复全部文件（${files}/10）`);
+    if(files<MEI.Data.pcFileCount)miss.push(`修复全部文件（${files}/${MEI.Data.pcFileCount}）`);
+    if(MEI.state.collectibles.diary.length<MEI.Data.diaryCount)miss.push('读完日记');
     if(!MEI.item('candle'))miss.push('蜡烛');
     if(!MEI.item('flower'))miss.push('小花');
     if(!MEI.item('letter'))miss.push('未发的信');
@@ -61,6 +67,7 @@ MEI.registerScene({
 
   /* ---------- M12 告别仪式 ---------- */
   beginRitual(){
+    this._ritualMoving=false;
     const p=MEI.$('#finale-panel');p.innerHTML='';
     p.appendChild(MEI.el('div',{class:'small',style:{'margin-bottom':'10px'}},
       '好好地，和她告别。按顺序完成四件事：'));
@@ -75,7 +82,7 @@ MEI.registerScene({
     const b=this.ritualBox;b.innerHTML='';
     const steps=[
       ()=>{ b.appendChild(MEI.el('button',{class:'btn btn-primary',
-        onclick:()=>{MEI.Audio.matchStrike();setTimeout(()=>MEI.Audio.candleLit(),260);
+        onclick:()=>{MEI.Audio.matchStrike();MEI.Clock.setTimeout(()=>MEI.Audio.candleLit(),260);
           MEI.Hint.flash('蜡烛点燃了，光很暖。');this.nextRitual();}},'① 划一根火柴，点燃蜡烛')); },
       ()=>{ b.appendChild(MEI.el('div',{style:{width:'60px',height:'60px',margin:'0 auto'},
         html:MEI.pixelIcons.flower}));
@@ -96,15 +103,16 @@ MEI.registerScene({
           onclick:()=>{
             if(!ta.value.trim()){ MEI.Hint.flash('写点什么吧，哪怕只有一句。');return; }
             MEI.Puzzles.solve('M12',{flash:'回信写好了，和信封、小花放在一起。',
-              onSolve:()=>setTimeout(()=>MEI.SceneController.goto('ending_remember',
+              onSolve:()=>MEI.Clock.setTimeout(()=>MEI.SceneController.goto('ending_remember',
                 {transition:'fade'}),1200)});
           }},'④ 写下回信，完成告别'));
       }
     ];
+    this.ritual=Math.max(0,Math.min(3,this.ritual));
     steps[this.ritual]();
   },
-  nextRitual(){ this.ritual++;
+  nextRitual(){ if(this._ritualMoving)return;this._ritualMoving=true;this.ritual++;
     MEI.state.ritualStep=this.ritual;
     MEI.SaveManager&&MEI.SaveManager.autoSave();
-    setTimeout(()=>this.ritualStep(),900); }
+    MEI.Clock.setTimeout(()=>{this._ritualMoving=false;this.ritualStep();},900); }
 });

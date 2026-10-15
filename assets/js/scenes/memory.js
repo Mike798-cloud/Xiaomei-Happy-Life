@@ -15,12 +15,18 @@ MEI.registerScene({
     MEI.Audio.setBgm('warm');
     /* 阶段恢复：按谜题完成状态决定进入哪个阶段，不重复已完成流程 */
     if(MEI.Puzzles.isSolved('M11')){
-      MEI.SceneController.goto('finale',{transition:'fade'});
+      MEI.Clock.setTimeout(()=>MEI.SceneController.goto('finale',{transition:'fade'}),30);
       return;
     }
-    if(MEI.Puzzles.isSolved('M10')){ this.phaseNight(); return; }
+    const phase=MEI.state.memoryPhase;
+    if(phase==='fire'){this.phaseFire();return;}
+    if(phase==='bedtime'){this.phaseBedtime();return;}
+    if(MEI.Puzzles.isSolved('M10')){this.phaseNight();return;}
+    if(phase==='dusk'){this.phaseDusk();return;}
     this.phaseDay();
   },
+
+  onExit(){if(this._hintTimer)this._hintTimer();this._hintTimer=null;MEI.Audio.stopFire();},
 
   /* 用真实窗景照片替换 CSS 渐变窗 */
   setStage(img,label,worldCls){
@@ -34,6 +40,7 @@ MEI.registerScene({
 
   /* ---------- 白天 ---------- */
   phaseDay(){
+    MEI.state.memoryPhase='day';
     this.setStage('assets/img/memory/memory_day.jpg','2003 年 8 月 15 日 · 白天','day');
     const s=this.stage;
     /* 桌上信封（透明投放区，叠在照片上） */
@@ -43,7 +50,7 @@ MEI.registerScene({
     b.appendChild(write);
     write.onclick=()=>{
       MEI.Dialogue.show([
-        {speaker:'小美',text:'阿树明天晚上要来啦，我要把留言本写得满满的！'},
+        {speaker:'小美',text:'阿树今天晚上要来啦，我要把留言本写得满满的！'},
         {speaker:'小美',text:'你帮我写：「欢迎来玩，我一直都在呀～」'}
       ],()=>{
         write.disabled=true;write.textContent='留言写好了 ✓';
@@ -54,22 +61,24 @@ MEI.registerScene({
   afterWrite(){
     const b=this.phaseBox;
     const tip=MEI.el('div',{class:'small',style:{'margin-top':'10px'}},
-      '把小白花拖进桌上的信封，一起寄给明天：');
+      '把小白花放进桌上的信封。可以拖过去，也可以点一下小花：');
     const flower=MEI.el('div',{class:'drag-piece',id:'m-flower',
       style:{width:'60px',height:'60px',padding:'0',background:'transparent','border':'none'},
       html:MEI.pixelIcons.flower});
     b.appendChild(tip);b.appendChild(flower);
-    MEI.makeDraggable(flower,{root:b,onDrop:(z)=>{
-      if(z&&z.id==='m-envelope'){
+    let offered=false;
+    const offer=()=>{if(offered)return;offered=true;
         MEI.Audio.candleLit();
         MEI.Hint.flash('小花夹进了信封。她小心地封好口。');
-        setTimeout(()=>this.phaseDusk(),1200);
-      }
-    }});
+        MEI.Clock.setTimeout(()=>this.phaseDusk(),1200);
+    };
+    flower.onclick=offer;
+    MEI.makeDraggable(flower,{root:this.world||MEI.$('#mem-world'),onDrop:z=>{if(z&&z.id==='m-envelope')offer();}});
   },
 
   /* ---------- 黄昏：折纸船 M10（健壮排序组件，无死锁/无丢步） ---------- */
   phaseDusk(){
+    MEI.state.memoryPhase='dusk';
     this.setStage('assets/img/memory/memory_dusk.jpg','2003 年 8 月 15 日 · 黄昏','dusk');
     MEI.SaveManager.autoSave();
     const b=this.phaseBox;b.innerHTML='';
@@ -91,6 +100,7 @@ MEI.registerScene({
 
   /* ---------- 晚 8：聊天室 ---------- */
   phaseNight(){
+    MEI.state.memoryPhase='night';
     this.setStage('assets/img/memory/memory_night.jpg','2003 年 8 月 15 日 · 晚 8:00','night');
     MEI.SaveManager.autoSave();
     const b=this.phaseBox;b.innerHTML='';
@@ -113,6 +123,7 @@ MEI.registerScene({
 
   /* ---------- 睡前 ---------- */
   phaseBedtime(){
+    MEI.state.memoryPhase='bedtime';
     this.setStage('assets/img/memory/memory_night.jpg','2003 年 8 月 15 日 · 深夜','night');
     const b=this.phaseBox;b.innerHTML='';
     b.appendChild(MEI.el('button',{class:'btn btn-primary',
@@ -125,7 +136,8 @@ MEI.registerScene({
 
   /* ---------- 凌晨：火灾 M11（光敏友好：不高频闪烁） ---------- */
   phaseFire(){
-    this.setStage('assets/img/memory/memory_fire.jpg','2003 年 8 月 15 日 · 凌晨','fire');
+    MEI.state.memoryPhase='fire';
+    this.setStage('assets/img/memory/memory_fire.jpg','2003 年 8 月 16 日 · 凌晨','fire');
     MEI.Audio.startFire();
     MEI.SaveManager.autoSave();
     const b=this.phaseBox;b.innerHTML='';
@@ -159,7 +171,7 @@ MEI.registerScene({
     if(undo) undo.disabled=this.fireOrder.length===0;
   },
   fireUndo(){
-    if(!this.fireOrder.length)return;
+    if(MEI.Puzzles.isSolved('M11')||!this.fireOrder.length)return;
     const last=this.fireOrder.pop();
     const btn=this.fireBtns&&this.fireBtns[last.id];
     if(btn){btn.disabled=false;btn.classList.remove('done');}
@@ -168,6 +180,7 @@ MEI.registerScene({
     this.fireRenderLog();
   },
   fireStep(a,btn){
+    if(MEI.Puzzles.isSolved('M11'))return;
     const correct=MEI.Data.fireActions;
     const i=this.fireOrder.length;
     if(a.id===correct[i].id){
@@ -196,7 +209,7 @@ MEI.registerScene({
       {speaker:'小美',text:'就一下下，我马上就出来。'}
     ],()=>{
       MEI.Audio.stopFire();
-      MEI.SceneController.goto('finale',{transition:'fade'});
+      MEI.Clock.setTimeout(()=>MEI.SceneController.goto('finale',{transition:'fade'}),30);
     });
   }
 });

@@ -6,6 +6,7 @@ MEI.registerScene({
   label:'第五幕 · 真相',
 
   render(root){
+    this._m9=null;
     const world=MEI.el('div',{class:'depth-world faded',id:'tr-world'});
     root.appendChild(world);
     world.appendChild(MEI.el('div',{class:'depth-floor'}));
@@ -40,7 +41,7 @@ MEI.registerScene({
     /* 门（回忆入口） */
     this.door=this.buildDoor();world.appendChild(this.door);
 
-    this.readSet={};
+    this.readSet=Object.fromEntries(MEI.state.collectibles.diary.map(id=>[id,true]));
     MEI.Audio.setBgm('piano');
     this.renderToc();
     /* 读档恢复 */
@@ -49,7 +50,7 @@ MEI.registerScene({
       this.lightDoor();
     }else if(MEI.state.collectibles.diary.length>=MEI.Data.diaryCount){
       /* 日记已集齐但碎片未解：直接进入排序，不必重翻日记 */
-      setTimeout(()=>this.showM9(),400);
+      MEI.Clock.setTimeout(()=>this.showM9(),400);
     }
     this._hintTimer=MEI.Hint.autoTimer('M9');
   },
@@ -70,15 +71,16 @@ MEI.registerScene({
     MEI.Data.diary.forEach(d=>{
       const read=this.readSet[d.id];
       this.tocEl.appendChild(MEI.el('div',{class:'toc-item'+(read?' read':''),
-        onclick:()=>this.readDiary(d)},(read?'📖':'🔒')+' '+d.date));
+        onclick:()=>this.readDiary(d)},(read?'📖':'📄')+' '+d.date));
     });
+    this.tocEl.appendChild(this.fragEl);
   },
 
   readDiary(d){
     this.readSet[d.id]=true;
     MEI.addDiary(d.id);
     this.renderToc();
-    const p=this.pageEl;p.innerHTML='';
+    const p=this.pageEl;p.innerHTML='';p.scrollTop=0;
     p.appendChild(MEI.el('div',{class:'diary-date'},d.date));
     const text=d.body;
     p.appendChild(MEI.el('div',{class:'diary-content',html:text.replace(/\n/g,'<br>')}));
@@ -87,12 +89,12 @@ MEI.registerScene({
     MEI.Audio.typ();
     /* 全部读完 → 记忆碎片 */
     if(Object.keys(this.readSet).length>=MEI.Data.diary.length)
-      setTimeout(()=>this.showM9(),600);
+      MEI.Clock.setTimeout(()=>this.showM9(),600);
   },
 
   /* 残页碎片（可选阅读） */
   readFragment(fr){
-    const p=this.pageEl;p.innerHTML='';
+    const p=this.pageEl;p.innerHTML='';p.scrollTop=0;
     p.appendChild(MEI.el('div',{class:'diary-date frag-date'},fr.title));
     p.appendChild(MEI.el('div',{class:'diary-content',html:fr.text.replace(/\n/g,'<br>')}));
     p.appendChild(MEI.el('div',{class:'small',style:{'margin-top':'12px','color':'#9a8a66'}},
@@ -103,6 +105,7 @@ MEI.registerScene({
   /* ---------- M9 记忆碎片排序（健壮排序组件，覆盖不丢片） ---------- */
   showM9(){
     this.m9zone.classList.remove('hidden');
+    if(this._m9&&!MEI.Puzzles.isSolved('M9'))return;
     const z=this.m9zone;z.innerHTML='';
     this._m9=MEI.makeOrderPuzzle(z,{
       items:MEI.Data.memoryPieces.map(mp=>({id:mp.id,label:mp.label})),

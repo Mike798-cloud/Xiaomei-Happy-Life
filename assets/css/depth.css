@@ -405,3 +405,30 @@
   font-family:var(--f-sans);line-height:1.5;}
 .frag-item:hover{background:#e0d6bc;color:#5a4a2a;}
 .frag-date{color:#9a7a4a;}
+
+.pc-tree-toggle{display:none;}
+.drag-piece{touch-action:none;}
+@media(max-width:720px){
+ .pc-tree-toggle{display:inline-block;}.pc-toolbar{flex-wrap:wrap;gap:5px;padding:7px;}
+ .pc-toolbar .small{font-size:11px;}.pc-screen{position:relative;grid-template-columns:minmax(0,1fr);margin:4px;min-height:0;}
+ .pc-tree{display:none;position:absolute;inset:0;z-index:5;overflow:auto;}
+ .pc-overlay.tree-visible .pc-tree{display:block;}.pc-overlay.tree-visible .pc-view{visibility:hidden;}
+ .pc-view{min-width:0;padding:9px;}.pc-view .doc-body{padding:12px 9px;font-size:15px;overflow-wrap:anywhere;}
+ .pc-titlebar{font-size:11px;}.pc-menubar{font-size:11px;}.source-view{font-size:12px;overflow-wrap:anywhere;white-space:pre-wrap;}
+ .diary-reader{left:50%;top:70px;transform:translateX(-50%);width:97%;max-height:calc(100% - 145px);}
+ .diary-body{grid-template-columns:96px minmax(0,1fr);min-height:120px;}.diary-toc .toc-item{padding:9px 6px;font-size:11px;}
+ .diary-page{padding:14px 12px;}.diary-page .diary-content{font-size:15px;line-height:1.95;}
+ .diary-frags{padding:4px;}.frag-item{font-size:11px;}.memory-sort{padding:9px;max-height:38vh;overflow:auto;}
+ #tr-door{left:auto;right:4%;top:auto;bottom:12px;width:66px;height:58px;transform:none;z-index:10;}
+ #tr-door .rh-label{position:static!important;font-size:10px;line-height:1.4;white-space:normal;bottom:0!important;}
+ .depth-explorer{display:none;}.relic-card{max-width:94vw;}.relic-cap{font-size:14px;}
+}
+@media(max-width:720px){.pc-overlay{top:60px;}}
+
+.pc-overlay{inset:68px 10px 12px;}
+@media(max-width:720px){.pc-overlay{inset:60px 0 0;}}
+@media(max-width:720px){
+ #tr-door{left:50%;right:auto;bottom:52px;transform:translateX(-50%);width:210px;height:44px;background:#332c20;border:1px solid #c1ab7b;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+ #tr-door .door-frame{display:none;}
+ #tr-door .rh-label{position:static!important;white-space:normal;color:#eee0c4;font-size:12px;padding:6px;}
+}

@@ -11,11 +11,11 @@ MEI.registerScene({
     root.appendChild(world);
     this.world=world;
     MEI.Audio.setBgm('chaos');
-    this.chatPhase();
+    if(MEI.state.moltingPhase==='chase')this.enterChase();else this.chatPhase();
   },
-  onExit(){ this.clearChat(); if(this._iv)clearInterval(this._iv);
-    if(this._cry)clearInterval(this._cry); MEI.Audio.stopFire(); },
-  clearChat(){ if(this._chatT)this._chatT.forEach(clearTimeout); this._chatT=[]; },
+  onExit(){ this.clearChat(); if(this._iv)MEI.Clock.clearInterval(this._iv);
+    if(this._cry)MEI.Clock.clearInterval(this._cry); MEI.Audio.stopFire(); },
+  clearChat(){ if(this._chatT)this._chatT.forEach(id=>MEI.Clock.clearTimeout(id)); this._chatT=[]; },
 
   /* ================= 阶段一：深夜聊天室 ================= */
   chatUsers:[
@@ -57,7 +57,7 @@ MEI.registerScene({
     /* 聊天室窗口 */
     const win=MEI.el('div',{class:'chat-win',id:'chat-win'});
     win.appendChild(MEI.el('div',{class:'chat-titlebar'},
-      MEI.el('span',{},'星星谷·月亮船 — 少儿聊天室（8 人在线）'),
+      MEI.el('span',{id:'chat-room-title'},'星星谷·月亮船 — 少儿聊天室'),
       MEI.el('span',{class:'chat-mini'},'— □ ×')));
     win.appendChild(MEI.el('div',{class:'chat-menubar'},'聊天室(R)  用户(U)  动作(A)  好友(F)  帮助(H)'));
     const split=MEI.el('div',{class:'chat-split'});
@@ -77,21 +77,43 @@ MEI.registerScene({
       MEI.el('span',{class:'chat-input'},'（……你没有打字，只是看着）')));
     world.appendChild(win);
 
-    /* 逐条把聊天打出来 */
-    this._chatT=[];
-    let delay=700;
-    this.chatScript.forEach(([kind,txt])=>{
-      this._chatT.push(setTimeout(()=>{
-        if(!document.body.contains(world))return;
-        const line=MEI.el('div',{class:'chat-line '+kind},txt);
-        body.appendChild(line);
-        body.scrollTop=body.scrollHeight;
-        /* 用户随时间一个个灰掉 */
-      },delay));
-      delay+=640;
+    this._chatT=[];this.chatPaused=false;this.chatBody=body;
+    this.chatIndex=Math.min(this.chatScript.length,MEI.state.chatIndex||0);
+    const appendLine=([kind,txt],scroll)=>{
+      const follow=body.scrollHeight-body.scrollTop-body.clientHeight<45;
+      body.appendChild(MEI.el('div',{class:'chat-line '+kind},txt));
+      if(follow||scroll)body.scrollTop=body.scrollHeight;
+      const departed=txt.includes('离开了聊天室。');
+      if(departed)Array.from(userlist.children).forEach(c=>{
+        const name=c.textContent;if(txt.includes(name))c.classList.add('off');
+      });
+      const online=userlist.querySelectorAll('.cu:not(.off)').length;
+      MEI.$('#chat-room-title').textContent='星星谷·月亮船 — 少儿聊天室（'+online+' 人在线）';
+    };
+    this.chatScript.slice(0,this.chatIndex).forEach(x=>appendLine(x,true));
+    const controls=MEI.el('div',{class:'chat-playback'});
+    const pause=MEI.el('button',{class:'btn',id:'chat-pause'},'暂停播放');
+    controls.appendChild(pause);win.appendChild(controls);
+    const pauseChat=on=>{
+      this.chatPaused=on;pause.textContent=on?'继续播放':'暂停播放';
+      if(on)MEI.Clock.clearTimeout(this._chatNext);else schedule(500);
+    };
+    const advance=()=>{
+      if(this.chatPaused||!body.isConnected)return;
+      if(this.chatIndex>=this.chatScript.length){pause.disabled=true;this.chatRot();return;}
+      const msg=this.chatScript[this.chatIndex++];appendLine(msg,false);
+      MEI.state.chatIndex=this.chatIndex;
+      schedule(Math.max(2200,Math.min(7000,msg[1].length*120)));
+    };
+    const schedule=ms=>{
+      MEI.Clock.clearTimeout(this._chatNext);
+      this._chatNext=MEI.Clock.setTimeout(advance,ms);this._chatT=[this._chatNext];
+    };
+    pause.onclick=()=>pauseChat(!this.chatPaused);
+    body.addEventListener('scroll',()=>{
+      if(body.scrollHeight-body.scrollTop-body.clientHeight>50&&!this.chatPaused)pauseChat(true);
     });
-    /* 聊完之后，房间开始「烂掉」 */
-    this._chatT.push(setTimeout(()=>this.chatRot(),delay+500));
+    schedule(1000);
   },
 
   chatRot(){
@@ -109,7 +131,7 @@ MEI.registerScene({
     /* 在线列表快速清空 */
     const ul=MEI.$('#chat-users');
     if(ul){ Array.from(ul.children).slice(2).forEach((c,i)=>
-      setTimeout(()=>c.classList.add('off'),i*120)); }
+      MEI.Clock.setTimeout(()=>c.classList.add('off'),i*120)); }
     /* 黑屏降临按钮 */
     const world=this.world;
     const go=MEI.el('div',{class:'chat-go'},
@@ -123,6 +145,8 @@ MEI.registerScene({
 
   /* ================= 阶段二：摸黑追逐 ================= */
   enterChase(){
+    MEI.state.moltingPhase='chase';
+    if(this._iv)MEI.Clock.clearInterval(this._iv);if(this._cry)MEI.Clock.clearInterval(this._cry);
     this.clearChat();
     const world=this.world;
     world.classList.add('chasing');
@@ -153,11 +177,11 @@ MEI.registerScene({
       MEI.el('div',{class:'rh-label'},'旧电脑'));
     world.appendChild(desk);
 
-    this.litCount=0; this.closeness=0; this.redEyeDone=false;
+    this._held=false;this._booting=false;this.litCount=0; this.closeness=0; this.redEyeDone=false;
     MEI.Audio.startFire();
-    setTimeout(()=>{const g=MEI.$('#chase-ghost');if(g)g.classList.add('show');},600);
-    this._iv=setInterval(()=>this.tick(),700);
-    this._cry=setInterval(()=>MEI.Audio.ghostCry(MEI.choice([-.7,.7])),4200);
+    MEI.Clock.setTimeout(()=>{const g=MEI.$('#chase-ghost');if(g)g.classList.add('show');},600);
+    this._iv=MEI.Clock.setInterval(()=>this.tick(),700);
+    this._cry=MEI.Clock.setInterval(()=>MEI.Audio.ghostCry(MEI.choice([-.7,.7])),4200);
   },
 
   lightSwitch(i){
@@ -165,12 +189,13 @@ MEI.registerScene({
     if(o.l.classList.contains('lit'))return;
     o.l.classList.add('lit'); o.safe.style.opacity='1';
     this.litCount++;
-    MEI.Audio.matchStrike(); setTimeout(()=>MEI.Audio.candleLit(),200);
+    MEI.Audio.matchStrike(); MEI.Clock.setTimeout(()=>MEI.Audio.candleLit(),200);
     this.closeness=Math.max(0,this.closeness-34);
     if(this.litCount>=3) MEI.Hint.flash('三盏灯都亮了。黑暗里，书桌那台旧电脑的方向，终于能看清了。',3400);
   },
 
   tick(){
+    if(this._held||this._booting)return;
     const rate=Math.max(1,7-this.litCount*2);
     this.closeness+=rate;
     const ghost=MEI.$('#chase-ghost');
@@ -182,33 +207,34 @@ MEI.registerScene({
       const f=MEI.el('div',{class:'red-eye-frame fire'},
         MEI.el('img',{src:'assets/img/depth/mei_ghost.jpg',
           style:{width:'min(600px,80%)','filter':'brightness(1.8) saturate(1.4) hue-rotate(-12deg)'}}));
-      this.world.appendChild(f); setTimeout(()=>f.remove(),130);
+      this.world.appendChild(f); MEI.Clock.setTimeout(()=>f.remove(),130);
     }
-    if(this.closeness>=100) this.held();
+    if(this.closeness>=100&&!this._held) this.held();
   },
 
   held(){
-    MEI.state.stats.held++;
+    this._held=true;MEI.state.stats.held++;
     const black=MEI.el('div',{class:'chase-held'},
       MEI.el('div',{},'……'),
       MEI.el('div',{style:{'margin-top':'10px'}},MEI.UI.lines.held));
     this.world.appendChild(black);
     MEI.Audio.ghostCry();
-    setTimeout(()=>{
-      black.remove();
+    MEI.Clock.setTimeout(()=>{
+      black.remove();this._held=false;
       this.closeness=10;
       const g=MEI.$('#chase-ghost'); if(g)g.style.transform='translateX(-50%) scale(1)';
     },2200);
   },
 
   bootPC(world){
-    clearInterval(this._iv);clearInterval(this._cry);
+    if(this._booting)return;this._booting=true;
+    MEI.Clock.clearInterval(this._iv);MEI.Clock.clearInterval(this._cry);
     MEI.Audio.winBoot();
     const fl=MEI.el('div',{class:'chase-flash'},
       '（屏幕的反光里，她就站在你座椅的身后……）');
     world.appendChild(fl);
     MEI.Audio.doorCreak();
-    setTimeout(()=>{ fl.remove();
+    MEI.Clock.setTimeout(()=>{ fl.remove();
       MEI.SceneController.goto('burnt_room',{transition:'instant'}); },2600);
   }
 });

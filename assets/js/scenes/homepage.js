@@ -52,7 +52,7 @@ MEI.albumPhotos = [
  {src:'photo_family.jpg',  cap:'全家福：外婆、我、小宇。三个人挤在照相馆的布幕前面。', date:'7·18', back:null,
    note:'（最边上的阴影里，好像还站着一个人……）'},
  {src:'photo_grandma.jpg',cap:'外婆和我。她笑起来满脸都是褶子，我最喜欢靠在她肩上。', date:'7·22', back:null},
- {src:'photo_birthday.jpg',cap:'今年的生日。就一小个蛋糕，没有客人，可蜡烛吹得很响。', date:'7·28', back:null},
+ {src:'photo_birthday.jpg',cap:'今年的生日。就一小个蛋糕，没有客人，可蜡烛吹得很响。', date:'3·14', back:null},
  {src:'photo_hospital.jpg',cap:'住院的日子。床头柜上有纸和折了一半的小船，窗外月亮好圆。', date:'8·01', back:null},
  {src:'photo_window.jpg', cap:'从我房间望出去：江边的屋顶，灯一盏一盏亮起来。', date:'8·03', back:null},
  {src:'photo_river_day.jpg', cap:'江边的滩涂。我放了两只小纸船，一只给我，一只给阿树。', date:'8·05', back:null},
@@ -73,8 +73,13 @@ MEI.registerScene({
   render(root){
     const world=MEI.el('div',{class:'surface-world'});
     root.appendChild(world);
-    this.clues={birthday:false,promise:false,doodle:false};
+    this.clues={birthday:MEI.item('note-birthday'),promise:MEI.item('note-promise'),doodle:!!MEI.flag('doodleRead')};
     this.buildWindow(world);
+    const viewport=MEI.$('.marquee-viewport',world);
+    viewport.tabIndex=0;viewport.setAttribute('role','button');viewport.setAttribute('aria-label','暂停或继续滚动公告');viewport.setAttribute('aria-pressed','false');
+    const toggle=()=>{const paused=viewport.classList.toggle('reading');viewport.setAttribute('aria-pressed',String(paused));};
+    viewport.onclick=toggle;viewport.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}};
+    this.updateClueStatus();
     this.scheduleAnomalies(world);
     MEI.Audio.setBgm('musicbox');
   },
@@ -123,7 +128,7 @@ MEI.registerScene({
     const sec=MEI.state.stats.playSeconds||0;
     const mm=String(Math.floor(sec/60)).padStart(2,'0'),ss=String(sec%60).padStart(2,'0');
     const el=MEI.$('#online-clock'); if(el) el.textContent='在线 '+mm+':'+ss;
-    this._clock=setInterval(()=>{ const e=MEI.$('#online-clock'); if(!e){clearInterval(this._clock);return;}
+    this._clock=MEI.Clock.setInterval(()=>{ const e=MEI.$('#online-clock'); if(!e){MEI.Clock.clearInterval(this._clock);return;}
       const s=MEI.state.stats.playSeconds||0;
       e.textContent='在线 '+String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },1000);
   },
@@ -155,7 +160,7 @@ MEI.registerScene({
     const signInner=MEI.el('div',{class:'sign-text',id:'cons-text'},
       MEI.el('div',{},'建设中……'),MEI.el('div',{},'我在你身后'));
     const signBox=MEI.el('div',{class:'construction-sign',id:'cons-sign',
-      onclick:()=>MEI.Puzzles.solve('M7',{flash:'警示牌背面有人用指甲刻了字：「危险，别进那扇门」。'})},
+      onclick:()=>{MEI.flag('signWarningSeen',true);MEI.Hint.flash('警示牌背面有人用指甲刻了字：「危险，别进那扇门」。');}},
       MEI.el('div',{class:'sign-posts l'}),MEI.el('div',{class:'sign-posts r'}),signInner);
     const sign=MEI.el('div',{class:'construction-wrap'},signBox);
 
@@ -226,7 +231,7 @@ MEI.registerScene({
         MEI.Audio.error();
         win.classList.add('lock-wrong');
         MEI.Hint.flash('锁没开……数字好像不对。');
-        setTimeout(()=>win.classList.remove('lock-wrong'),420);
+        MEI.Clock.setTimeout(()=>win.classList.remove('lock-wrong'),420);
       }
     };
     win.querySelector('#lock-ok').onclick=tryOpen;
@@ -260,7 +265,7 @@ MEI.registerScene({
         MEI.el('input',{type:'radio',name:'v-'+q.slice(0,4)}),o)));
       const r=MEI.el('div',{class:'vote-result',style:{display:'none'}},res);
       head.appendChild(body);head.appendChild(r);
-      body.addEventListener('change',()=>{head.querySelector('.vote-q').style.display='none';
+      body.addEventListener('change',()=>{body.style.display='none';
         r.style.display='block';MEI.Audio.unlock();});
       return head;
     };
@@ -288,13 +293,14 @@ MEI.registerScene({
   openSub(kind){
     MEI.Audio.click();
     const host=MEI.$('.win98')||MEI.$('.surface-world');
+    host.scrollTop=0;host.classList.add('sub-open');
     /* 关掉旧的 */
     MEI.$$('.subpage',host).forEach(x=>x.remove());
     const titles={about:'关于小美',photos:'我的照片',friends:'好朋友们'};
     const sub=MEI.el('div',{class:'subpage'},
       MEI.el('div',{class:'subpage-titlebar'},
         MEI.el('span',{},titles[kind]),
-        MEI.el('span',{class:'subpage-close',onclick:()=>sub.remove()},'×')),
+        MEI.el('span',{class:'subpage-close',onclick:()=>{sub.remove();host.classList.remove('sub-open');}},'×')),
       MEI.el('div',{class:'subpage-body scrollpage'},this.subContent(kind)));
     host.appendChild(sub);
   },
@@ -487,7 +493,7 @@ MEI.registerScene({
 
     /* 涂鸦板（暗号线索） */
     const doodle=MEI.el('div',{class:'doodle-board',
-      onclick:e=>{ if(!this.clues.doodle){ this.clues.doodle=true;
+      onclick:e=>{ if(!this.clues.doodle){ this.clues.doodle=true;MEI.flag('doodleRead',true);
         this.updateClueStatus(); MEI.Audio.unlock();
         MEI.Hint.flash('涂鸦写着：「阿树教我——我在你身后 ＝ 我想你啦」。');
         e.currentTarget.classList.add('found'); } } },
@@ -512,18 +518,18 @@ MEI.registerScene({
 
   /* ---------- 异常演出（克制、随探索升级） ---------- */
   scheduleAnomalies(world){
-    setTimeout(()=>{ const t=MEI.$('#marquee-track');
+    MEI.Clock.setTimeout(()=>{ const t=MEI.$('#marquee-track');
       if(t){ t.innerHTML='<span>'+MEI.UI.marquee.p1b+'</span><span>'+MEI.UI.marquee.p1b+'</span>';
         MEI.Audio.ghostLaugh(); } },20000);
-    setTimeout(()=>{ const t=MEI.$('#cons-text');
+    MEI.Clock.setTimeout(()=>{ const t=MEI.$('#cons-text');
       if(t){ t.innerHTML='<div>建设中……</div><div style="color:#9c1f1f">我在你身后</div>';
         MEI.Audio.doorCreak(); } },36000);
     /* 计数器轻微跳动 */
-    setTimeout(()=>{ const v=MEI.$('#counter-val');
+    MEI.Clock.setTimeout(()=>{ const v=MEI.$('#counter-val');
       if(v && !v.dataset.creep){ v.dataset.creep='1';
         v.textContent='000114';
         const sub=MEI.$('#counter-sub'); if(sub) sub.textContent='个没能离开的人（你走不掉的）'; } },50000);
   },
 
-  onExit(){ if(this._clock) clearInterval(this._clock); }
+  onExit(){ if(this._clock) MEI.Clock.clearInterval(this._clock); }
 });

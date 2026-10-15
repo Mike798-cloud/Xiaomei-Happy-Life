@@ -102,7 +102,7 @@ MEI.registerScene({
       MEI.Audio.click();this.page++;this.renderPage();
       if(this.page===this.totalPages()-1 && !this.flippedAll){
         this.flippedAll=true;
-        setTimeout(()=>this.buildPuzzle(),500);
+        MEI.Clock.setTimeout(()=>this.buildPuzzle(),500);
       }
     };
     this.jumpBtn.onclick=()=>{
@@ -185,9 +185,9 @@ MEI.registerScene({
       MEI.Audio.error();
       MEI.$('#gb-close-x').classList.add('buggy');
       MEI.Hint.flash('窗口……关不掉。',2000);
-      setTimeout(()=>MEI.Audio.breath(MEI.choice([-.8,.8])),400);
+      MEI.Clock.setTimeout(()=>MEI.Audio.breath(MEI.choice([-.8,.8])),400);
       if(!MEI.Puzzles.isSolved('M4'))
-        setTimeout(()=>MEI.Hint.flash('你自己的编号，好像就写在主页计数器上。'),2400);
+        MEI.Clock.setTimeout(()=>MEI.Hint.flash('你自己的编号，好像就写在主页计数器上。'),2400);
     });
   },
 
@@ -199,7 +199,7 @@ MEI.registerScene({
       boxShadow:'inset 0 0 120px rgba(180,80,20,.75)',border:'3px solid rgba(120,50,10,.6)'}});
     world.appendChild(burn);
     MEI.Audio.ghostCry();
-    setTimeout(()=>{
+    MEI.Clock.setTimeout(()=>{
       MEI.SceneController.goto('molting',{transition:'molt',mx:70,my:60});
     },3000);
   }

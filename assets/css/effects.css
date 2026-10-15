@@ -34,7 +34,11 @@ body.vignette-on #vignette-filter{opacity:1;}
 /* ---------- 光敏保护：压制闪烁 ---------- */
 body.photosensitive #noise-filter{animation:none;}
 body.photosensitive .surface-world{animation:none;}
-body.photosensitive *{animation-duration:inherit;}
+body.photosensitive .surface-world::before,body.photosensitive .surface-world::after,
+body.photosensitive .flame-flick,body.photosensitive .m-fireglow,body.photosensitive .m-fireglow::after,
+body.photosensitive .stinger{animation:none;}
+body.photosensitive .red-eye-frame{display:none;}
+body.reduced-scares .red-eye-frame{display:none;}
 
 /* ---------- 淡出黑屏 ---------- */
 #transition-layer .fade-black{position:absolute;inset:0;background:#000;opacity:0;}
@@ -356,3 +360,24 @@ body.photosensitive .memory-world.fire .m-photobg{animation:none;}
 /* 「留盏灯」按钮：旧网页灰按钮，悬停时泛一点烛光 */
 .btn-lamp{color:#3a2c14;border-color:#fff #000 #000 #fff;}
 .btn-lamp:hover{box-shadow:0 0 12px rgba(255,214,140,.55);border-color:#fff;}
+
+.end-continue{font:12px var(--f-sans);color:#a49b8c;margin:20px auto 0;text-align:center;}
+.chat-playback{padding:6px 10px;display:flex;justify-content:flex-end;flex:none;border-top:1px solid #888;}
+.room-return{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:35;padding:10px 18px;}
+.finale-back{width:100%;padding:10px;line-height:1.6;}
+@media(max-width:720px){
+ .chat-win{width:98%;height:calc(100% - 150px);top:70px;transform:translateX(-50%);}
+ .chat-users{width:82px;margin:4px;font-size:11px;}.chat-body{font-size:14px;padding:8px;margin:4px;line-height:1.9;}
+ .chat-menubar{font-size:10px;}.chat-inputbar{font-size:11px;}.chat-titlebar{font-size:12px;}
+ .chat-go{bottom:10px;width:96%;padding:8px;}.chat-go .btn{padding:8px;}.chat-icon{display:none;}
+ .memory-world{padding:70px 10px 12px;overflow:auto;justify-content:flex-start;}
+ .m-stage{width:100%;height:38vh;min-height:200px;flex-shrink:0;}
+ .m-phasebox{width:100%;min-height:140px;flex-shrink:0;padding:12px;}
+ .m-timeind{top:62px;font-size:12px;}.memory-world .m-envelope{right:8%;bottom:10%;width:86px;height:52px;}
+ .finale-world{padding-top:72px;overflow:auto;justify-content:flex-start;}.finale-figure{height:32vh;min-height:180px;flex-shrink:0;}
+ .finale-panel{width:96%;max-height:none;flex-shrink:0;margin:14px 0 30px;padding:12px;}
+ .ending-world{padding:24px 16px;}.end-text{font-size:16px;line-height:2;}.ending-world.thanks{padding:32px 14px;}
+ .thanks-card{width:100%;}.thanks-title{font-size:28px;}.thanks-card .ending-actions{flex-wrap:wrap;}
+}
+
+@media(max-width:720px){.finale-figure{position:relative;left:auto;top:auto;transform:none;width:100%;text-align:center;margin-bottom:8px;}.finale-panel{position:relative;bottom:auto;}}

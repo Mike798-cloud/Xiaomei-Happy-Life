@@ -17,7 +17,7 @@ window.MEI = window.MEI || {};
       {sel:'.construction-sign, .under-construction, #construction', line:'“那个‘建设中’的小牌子……你有没有凑近看看？”'},
       {sel:'.nav-col a', line:'“关于我、照片、好朋友，还有留言，都翻一翻，线索就藏在里面。”'}],
     guestbook:[
-      {sel:'#gb-jump, .gb-jump, .jump-box', line:'“年份跳得好快……能不能，一下子跳到很久以前？”'},
+      {sel:'#gb-jump, .gb-jump, .jump-box', line:'“那个跳转框，好像在等一个访客编号。”'},
       {sel:'#m3-zone, .drop-zone', line:'“留言里那些散开的字，好像……能拼回一句话。”'}],
     molting:[
       {sel:'.room-light', line:'“太黑了……有没有什么，是可以点亮的？”'},
@@ -30,8 +30,8 @@ window.MEI = window.MEI || {};
       {sel:'#m9-zone, .m9-slot', line:'“日记读完了……可还有什么，没有放回原位。”'},
       {sel:'#m9-zone, .m9-slot', line:'“把散开的那几块，拖回它们该在的地方。”'}],
     memory_day:[
-      {sel:'.memory-offer, .offer, [class*="offer"], .window-hot', line:'“窗边……能不能，放下点什么？”'},
-      {sel:'[class*="next"], .memory-go, .window-hot', line:'“从白天，到黄昏，再到很晚很晚……她一直都在。”'}],
+      {sel:'#m-flower, #m-write, #m-avatar', line:'“桌上还有东西没放好，你再看看呀。”'},
+      {sel:'#m-phasebox button, #m-avatar', line:'“我想把这一天慢慢过完，你陪着我好不好。”'}],
     finale:[
       {sel:'.ritual-item, [class*="ritual"], .offer-item', line:'“最后了……把该带的，都带到她面前吧。”'}]
   };
@@ -59,15 +59,15 @@ window.MEI = window.MEI || {};
       return 'unknown';
     },
 
-    solvedSet(){ try{ return (MEI.Puzzles.solved||[]).slice().sort().join(','); }catch(e){ return ''; } },
+    solvedSet(){ try{ return Object.keys(MEI.Puzzles.solved||{}).filter(k=>MEI.Puzzles.isSolved(k)).sort().join(','); }catch(e){ return ''; } },
 
     resetForScene(id){
-      this.scene=id; this.level=0; this.regionClicks={}; this.lastRegion=null;
+      this.idle=0;this.scene=id; this.level=0; this.regionClicks={}; this.lastRegion=null;
       this.solvedSnapshot=this.solvedSet(); this.active=!!CUES[id];
     },
 
     /* 任何“进展”都清空计数：谜题被解、读到新文本、切场景 */
-    noteProgress(){ this.regionClicks={}; this.lastRegion=null; },
+    noteProgress(){this.idle=0;this.regionClicks={};this.lastRegion=null;},
 
     onPointerDown(e){
       const st=cfg[this.setting()]||cfg.normal;
@@ -75,6 +75,7 @@ window.MEI = window.MEI || {};
       const cur=MEI.SceneController&&MEI.SceneController.current;
       if(!cur||!CUES[cur]) return;
       const reg=this.regionOf(e.target);
+      if(MEI.Clock.paused)return;
       if(reg!=='unknown'){
         this.regionClicks[reg]=(this.regionClicks[reg]||0)+1;
         if(this.regionClicks[reg]>=st.clicks && this.canFire(st)) this.fire(cur);
@@ -125,23 +126,16 @@ window.MEI = window.MEI || {};
       if(cur!==this.scene){ this.resetForScene(cur); return; }
       /* 谜题有进展 → 计数归零、提示等级回退 */
       const ss=this.solvedSet();
-      if(ss!==this.solvedSnapshot){ this.solvedSnapshot=ss; this.noteProgress(); this.level=Math.max(0,this.level-1); }
+      if(ss!==this.solvedSnapshot){this.solvedSnapshot=ss;this.noteProgress();this.level=Math.max(0,this.level-1);}
+      if(MEI.$('#modal-layer').children.length||!MEI.$('#dialogue-box').classList.contains('hidden'))return;
+      this.idle=(this.idle||0)+1000;
+      if(this.idle>=st.idle&&this.canFire(st)){this.fire(cur);this.idle=0;}
     },
 
     init(){
       document.addEventListener('pointerdown',e=>this.onPointerDown(e),true);
-      setInterval(()=>this.tick(),1000);
-      /* 空闲计时：以最近一次有效交互为起点 */
-      let idleTimer=null;
-      const bump=()=>{ this.noteProgress(); clearTimeout(idleTimer);
-        const mode=this.setting(), st=cfg[mode]||cfg.normal;
-        if(st.idle!==Infinity) idleTimer=setTimeout(()=>{
-          const cur=MEI.SceneController&&MEI.SceneController.current;
-          if(cur&&CUES[cur]&&this.canFire(cfg[this.setting()]||cfg.normal)) this.fire(cur);
-        },st.idle);
-      };
-      ['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,bump,true));
-      bump();
+      MEI.Clock.setInterval(()=>this.tick(),1000,'global');
+      ['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{this.idle=0;},true));
     }
   };
 

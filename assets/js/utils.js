@@ -18,17 +18,58 @@ MEI.el = function(tag,props,...kids){
         e.addEventListener(k.slice(2).toLowerCase(),v);
       else if(k==='dataset') Object.assign(e.dataset,v);
       else if(k==='style' && typeof v==='object') Object.assign(e.style,v);
+      else if(['disabled','checked','selected','multiple','readOnly','required','hidden'].includes(k)) e[k]=Boolean(v);
       else e.setAttribute(k,v);
     }
   }
   const append=c=>{
     if(c==null) return;
     if(Array.isArray(c)) c.forEach(append);
-    else e.appendChild(typeof c==='string'?document.createTextNode(c):c);
+    else e.appendChild(typeof c==='string'||typeof c==='number'?document.createTextNode(String(c)):c);
   };
   kids.forEach(append);
   return e;
 };
+
+
+/* Scene timers stop on pause and are discarded on navigation/load. */
+MEI.Clock={
+  jobs:new Map(), reasons:new Set(), nextId:1, scope:0, last:performance.now(),
+  get paused(){return this.reasons.size>0;},
+  add(fn,ms,repeat,scope){
+    const id=this.nextId++,delay=Math.max(1,Number(ms)||1);
+    this.jobs.set(id,{fn,left:delay,delay,repeat,scope:scope==='global'?'global':this.scope});return id;
+  },
+  setTimeout(fn,ms,scope){return this.add(fn,ms,false,scope);},
+  setInterval(fn,ms,scope){return this.add(fn,ms,true,scope);},
+  clearTimeout(id){this.jobs.delete(id);},clearInterval(id){this.jobs.delete(id);},
+  clearScene(){for(const [id,j] of this.jobs)if(j.scope!=='global')this.jobs.delete(id);this.scope++;},
+  setPaused(reason,on){
+    const was=this.paused;
+    if(on)this.reasons.add(reason);else this.reasons.delete(reason);
+    this.last=performance.now();
+    document.body.classList.toggle('game-paused',this.paused);
+    const a=MEI.Audio;
+    if(was!==this.paused&&a&&a.ready){
+      if(this.paused)a.ctx.suspend().catch(()=>{});
+      else {a.nextT=a.ctx.currentTime+.08;a.ctx.resume().catch(()=>{});}
+    }
+  },
+  tick(){
+    const now=performance.now(),dt=Math.min(250,now-this.last);this.last=now;
+    if(this.paused)return;
+    for(const [id,j] of Array.from(this.jobs)){
+      if(!this.jobs.has(id))continue;
+      j.left-=dt;if(j.left>0)continue;
+      if(j.repeat)j.left=j.delay;else this.jobs.delete(id);
+      try{j.fn();}catch(e){window.setTimeout(()=>{throw e;},0);}
+      if(this.paused)break;
+    }
+  }
+};
+window.setInterval(()=>MEI.Clock.tick(),16);
+document.addEventListener('visibilitychange',()=>MEI.Clock.setPaused('hidden',document.hidden));
+MEI.Clock.setPaused('hidden',document.hidden);
 
 /* 事件委托 */
 MEI.delegate = function(root,selector,type,handler){
@@ -165,13 +206,13 @@ MEI.makeOrderPuzzle = function(container,opts){
         selected=null;
         Object.values(cards).forEach(c=>c.classList.add('pz-done'));
         MEI.Audio.candleLit();
-        if(opts.onComplete) setTimeout(opts.onComplete,350);
+        if(opts.onComplete) MEI.Clock.setTimeout(opts.onComplete,350);
       }else{
         if(!opts.positional) slots.forEach(z=>z.classList.add('pz-bad'));
         MEI.Audio.error();
         if(!wrongShown){ wrongShown=true;
           MEI.Hint.flash(opts.wrongLine||'顺序还差一点，点错的那一步可以拿回来重放。',2600);
-          setTimeout(()=>{wrongShown=false;slots.forEach(z=>z.classList.remove('pz-bad'));},1200);
+          MEI.Clock.setTimeout(()=>{wrongShown=false;slots.forEach(z=>z.classList.remove('pz-bad'));},1200);
         }
       }
     }

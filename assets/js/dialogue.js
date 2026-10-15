@@ -19,6 +19,7 @@ MEI.Dialogue = {
 
   /* lines: 字符串 / {speaker,text,id} / 数组 */
   show(lines,onDone){
+    MEI.Clock.clearInterval(this.timer);
     this.queue=(Array.isArray(lines)?lines:[lines]).map(l=>
       typeof l==='string'?{text:l}:l);
     this.idx=0; this.done=onDone||null;
@@ -47,16 +48,15 @@ MEI.Dialogue = {
   },
   typeLoop(){
     this.typing=true;
-    const speed=MEI.state.settings.textSpeed==='fast'?18:
-      MEI.state.settings.textSpeed==='instant'?0:42;
-    clearInterval(this.timer);
+    const speed=({slow:80,normal:50,fast:25,instant:0})[MEI.state.settings.textSpeed]??50;
+    MEI.Clock.clearInterval(this.timer);
     if(speed===0){ this.finishTyping(); return; }
-    this.timer=setInterval(()=>{
+    this.timer=MEI.Clock.setInterval(()=>{
       const ch=this.full[this.shown];
       this.shown++;
       if(ch&&/[，。、！？～…]/.test(ch)) MEI.Audio.typ();
       this.paint();
-      if(this.shown>=this.full.length){ clearInterval(this.timer);this.afterTyped(); }
+      if(this.shown>=this.full.length){ MEI.Clock.clearInterval(this.timer);this.afterTyped(); }
     },speed);
   },
   paint(){
@@ -75,7 +75,7 @@ MEI.Dialogue = {
       +this.full.replace(/\n/g,'<br>');
   },
   finishTyping(){
-    clearInterval(this.timer); this.shown=this.full.length; this.typing=false;
+    MEI.Clock.clearInterval(this.timer); this.shown=this.full.length; this.typing=false;
     const item=this.queue[this.idx];
     if(item.id) MEI.markRead(item.id);
     const c=MEI.$('#dlg-content');
@@ -89,7 +89,8 @@ MEI.Dialogue = {
       this.done=null; d&&d(); }
     else this.render();
   },
-  hide(){ this.el.classList.add('hidden'); clearInterval(this.timer); }
+  hide(){ if(this.el)this.el.classList.add('hidden'); MEI.Clock.clearInterval(this.timer);this.typing=false; },
+  cancel(){this.hide();this.queue=[];this.done=null;this.el=null;}
 };
 document.addEventListener('click',ev=>{
   if(!MEI.Dialogue.el||MEI.Dialogue.el.classList.contains('hidden')) return;
@@ -104,8 +105,8 @@ MEI.Hint = {
     box.innerHTML='';
     box.appendChild(MEI.el('div',{class:'hint-bubble'},text));
     box.classList.remove('hidden');
-    clearTimeout(this._t);
-    this._t=setTimeout(()=>box.classList.add('hidden'),dur);
+    MEI.Clock.clearTimeout(this._t);
+    this._t=MEI.Clock.setTimeout(()=>box.classList.add('hidden'),dur);
   },
   /* 三级谜题提示 */
   puzzle(id){
@@ -119,13 +120,15 @@ MEI.Hint = {
   /* 卡关自动计时；返回清理函数 */
   autoTimer(id,resetSignal){
     let elapsed=0;
-    const iv=setInterval(()=>{
-      elapsed+=1;
-      if(elapsed>=90 && (this.counts[id]||0)===0){ this.puzzle(id); elapsed=0; }
-      else if(elapsed>=60 && (this.counts[id]||0)===1){ this.puzzle(id); elapsed=0; }
-      else if(elapsed>=60 && (this.counts[id]||0)>=2){ this.puzzle(id); elapsed=0; }
+    const iv=MEI.Clock.setInterval(()=>{
+      const mode=MEI.state.settings.softHint;
+      if(mode==='off'||MEI.Puzzles.isSolved(id)){elapsed=0;return;}
+      if(!MEI.$('#dialogue-box').classList.contains('hidden')||MEI.$('#modal-layer').children.length)return;
+      elapsed++;
+      const limit=mode==='low'?150:90;
+      if(elapsed>=limit){this.puzzle(id);elapsed=0;}
     },1000);
-    return ()=>clearInterval(iv);
+    return ()=>MEI.Clock.clearInterval(iv);
   }
 };
 

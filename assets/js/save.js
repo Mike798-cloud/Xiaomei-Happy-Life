@@ -41,6 +41,8 @@ MEI.SaveManager = {
   load(slot){
     const data=this._read(slot==='auto'?KEY_AUTO:KEY_SLOT(slot));
     if(!data || !data.state) return false;
+    if(MEI.SceneController.transitioning)return false;
+    MEI.SceneController.cleanup();
     const d=MEI.defaultState(), st=data.state;
     /* 嵌套对象逐键补全，防止旧档/损坏档字段缺失 */
     ['flags','collectibles','settings','stats','solved'].forEach(k=>{
@@ -49,6 +51,8 @@ MEI.SaveManager = {
     if(!st.solved||typeof st.solved!=='object') st.solved={};
     if(!Array.isArray(st.inventory)) st.inventory=d.inventory.slice();
     if(!Array.isArray(st.readTexts)) st.readTexts=d.readTexts.slice();
+    st.collectibles=Object.assign({},d.collectibles,st.collectibles||{});
+    ['diary','files','memory'].forEach(k=>{if(!Array.isArray(st.collectibles[k]))st.collectibles[k]=[];});
     MEI.state = Object.assign(d,st);
     MEI.applySettings();
     const sc=MEI.scenes[MEI.state.scene];
@@ -61,6 +65,11 @@ MEI.SaveManager = {
     if(sc.onEnter) sc.onEnter();
     MEI.SceneController.showChapterLabel(sc);
     return true;
+  },
+  continueLatest(){
+    const slots=['auto',1,2,3].filter(s=>this.meta(s));
+    slots.sort((a,b)=>(this.meta(b).ts||0)-(this.meta(a).ts||0));
+    return slots.length?this.load(slots[0]):false;
   },
   meta(slot){
     const data=this._read(slot==='auto'?KEY_AUTO:KEY_SLOT(slot));
@@ -91,7 +100,8 @@ MEI.SaveManager = {
 };
 
 /* 定时累计游玩时间 + 周期自动存档 */
-setInterval(()=>{
-  MEI.state.stats.playSeconds+=5;
-  if(MEI.state.scene!=='title') MEI.SaveManager.autoSave();
-},5000);
+MEI.Clock.setInterval(()=>{
+  if(MEI.state.scene==='title'||MEI.state.scene.startsWith('ending')||MEI.SceneController.transitioning)return;
+  MEI.state.stats.playSeconds+=1;
+  if(MEI.state.stats.playSeconds%5===0)MEI.SaveManager.autoSave();
+},1000,'global');

@@ -29,14 +29,12 @@ MEI.registerScene({
     cont.classList.toggle('disabled',!MEI.SaveManager.hasAny());
     MEI.$('#btn-new').onclick=()=>{ MEI.Audio.init();MEI.Audio.click();
       this.firstWarning(()=>{
-        MEI.Puzzles.reset();
-        MEI.state=MEI.defaultState();MEI.applySettings();
-        MEI.SceneController.goto('prologue',{transition:'fade'});
+        MEI.startNewGame();
       }); };
     cont.onclick=()=>{ if(cont.classList.contains('disabled')){
       MEI.Hint.flash('还没有存档。');return; }
       MEI.Audio.init();MEI.Audio.click();
-      MEI.SaveManager.load('auto'); };
+      MEI.SaveManager.continueLatest(); };
     MEI.$('#btn-settings').onclick=()=>{ MEI.Audio.init();MEI.Audio.click();
       MEI.openSettings(); };
     MEI.$('#btn-about').onclick=()=>{ MEI.Audio.click();MEI.openAbout(); };
@@ -75,7 +73,7 @@ MEI.openAbout=function(){
       MEI.el('div',{class:'small',style:{'margin-top':'10px'}},
         '画面里有少量闪烁和明暗对比。如果你对强光敏感、心脏容易不适，或者最近情绪低落、不太经得起惊吓，请斟酌要不要继续；中途觉得不舒服，立刻关闭，缓解之后再继续。'),
       MEI.el('div',{class:'small',style:{'margin-top':'10px'}},
-        '找个安静的夜晚，戴上耳机，慢慢浏览，助屏幕前的你玩的开心。'),
+        '找个安静的夜晚，戴上耳机，慢慢浏览，祝屏幕前的你玩得开心。'),
       MEI.el('div',{class:'small',style:{'margin-top':'10px','color':'#7a6a5f'}},
         '故事里所有危险的情节都只是虚构，请勿在现实里模仿。')),
     MEI.el('div',{class:'modal-footer'},
@@ -177,9 +175,10 @@ MEI.togglePause=function(force){
   const m=MEI.$('#pause-menu');
   const show=force!=null?force:m.classList.contains('hidden');
   if(show){
-    if(MEI.state.scene==='title')return;
+    if(MEI.state.scene==='title'||MEI.SceneController.transitioning)return;
     m.classList.remove('hidden');
   }else m.classList.add('hidden');
+  MEI.Clock.setPaused('menu',show);
 };
 
 /* ============ HUD ============ */
@@ -204,6 +203,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   /* ESC 暂停 */
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){
+      const modal=MEI.$('#modal-layer');
+      if(modal.children.length){
+        const close=modal.lastElementChild.querySelector('.modal-close');
+        if(close)close.click();return;
+      }
       if(!MEI.$('#pause-menu').classList.contains('hidden')) MEI.togglePause(false);
       else MEI.togglePause(true);
     }

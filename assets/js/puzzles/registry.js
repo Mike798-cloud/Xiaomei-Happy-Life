@@ -6,12 +6,12 @@ MEI.Puzzles = {
   get solved(){ return MEI.state.solved; },
   isSolved(id){ return !!MEI.state.solved[id]; },
   solve(id,opts={}){
-    if(MEI.state.solved[id]) return;
+    if(MEI.state.solved[id]){if(opts.onSolve)MEI.Clock.setTimeout(opts.onSolve,1);return;}
     MEI.state.solved[id]=true;
     MEI.Audio.unlock();
     if(opts.flash) MEI.Hint.flash(opts.flash,2600);
     MEI.SaveManager.autoSave();
-    if(opts.onSolve) setTimeout(opts.onSolve,300);
+    if(opts.onSolve) MEI.Clock.setTimeout(opts.onSolve,300);
   },
   reset(){ MEI.state.solved={}; }
 };
@@ -34,7 +34,7 @@ MEI.askCode = function({title,placeholder='',expected,maxLen=8,onResult,soft}={}
         MEI.el('button',{class:'btn',onclick:()=>{close();onResult(null);}},'取消'),
         MEI.el('button',{class:'btn btn-primary',id:'code-ok'},'确定'))));
   layer.appendChild(bd);
-  setTimeout(()=>input.focus(),80);
+  MEI.Clock.setTimeout(()=>input.focus(),80);
   const submit=()=>{
     const v=input.value.trim();
     if(expected!=null && String(v)!==String(expected)){

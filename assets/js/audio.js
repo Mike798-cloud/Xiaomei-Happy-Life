@@ -22,7 +22,7 @@ MEI.Audio = {
   bgmMode:'off', step:0, nextT:0, fireNodes:null,
 
   init(){
-    if(this.ready) { if(this.ctx.state==='suspended') this.ctx.resume(); return; }
+    if(this.ready){if(this.ctx.state==='suspended'&&!MEI.Clock.paused)this.ctx.resume();return;}
     try{
       const AC=window.AudioContext||window.webkitAudioContext;
       if(!AC) return;
@@ -34,9 +34,9 @@ MEI.Audio = {
       this.gains.sfx.connect(this.gains.master);
       this.gains.voice.connect(this.gains.master);
       this.gains.master.connect(c.destination);
-      this.applyVolumes();
       this.ready=true;
-      this._scheduler=setInterval(()=>this.schedule(),30);
+      this.applyVolumes();
+      this._scheduler=setInterval(()=>{if(!MEI.Clock.paused)this.schedule();},30);
     }catch(e){ this.ready=false; }
   },
 

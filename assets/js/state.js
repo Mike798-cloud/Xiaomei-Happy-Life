@@ -54,6 +54,17 @@ MEI.SceneController = {
   /* 切换场景
      opts.transition: 'instant' | 'fade' | 'molt'
      opts.moltFrom / moltTo 角度 */
+  transitioning:false,
+  cleanup(){
+    if(this.current&&MEI.scenes[this.current].onExit)MEI.scenes[this.current].onExit();
+    MEI.Clock.clearScene();
+    clearTimeout(this._clT);
+    MEI.Dialogue&&MEI.Dialogue.cancel();
+    MEI.Clock.setPaused('menu',false);
+    ['#pause-menu','#inventory-panel','#hint-box'].forEach(s=>MEI.$(s)?.classList.add('hidden'));
+    MEI.$('#modal-layer').innerHTML='';
+    MEI.Audio&&MEI.Audio.stopFire();
+  },
   async goto(id,opts={}){
     if(!MEI.scenes[id]){ console.error('场景不存在:',id); return false; }
     const sc=MEI.scenes[id];
@@ -61,10 +72,12 @@ MEI.SceneController = {
       MEI.Hint && MEI.Hint.flash(sc.lockedMsg||'现在还不能去那里。');
       return false;
     }
+    if(this.transitioning)return false;
+    this.transitioning=true;
     const tr=opts.transition||'fade';
-
-    if(this.current && MEI.scenes[this.current].onExit)
-      MEI.scenes[this.current].onExit();
+    this.cleanup();
+    document.body.classList.add('scene-changing');
+    try{
 
     if(tr==='molt') await this.playMolt(opts);
     else if(tr==='fade') await this.fadeToBlack();
@@ -80,26 +93,23 @@ MEI.SceneController = {
     MEI.SaveManager && MEI.SaveManager.autoSave();
     this.showChapterLabel(sc);
     return true;
+    }finally{this.transitioning=false;document.body.classList.remove('scene-changing');}
   },
 
   build(id){
     const layer=MEI.$('#screen-layer');
-    if(this.node){ const old=this.node; old.classList.add('leaving');
-      /* 旧节点仅保留退场动画：不再拦截点击，且移除其 id，
-         使 render() 内的全局 MEI.$('#id') 一定命中新节点，
-         避免“返回/重访后新画面控件没绑上事件 / 被旧节点挡住”。 */
-      old.style.pointerEvents='none';
-      old.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
-      setTimeout(()=>old.remove(),420); }
+    if(this.node)this.node.remove();
     const node=MEI.el('div',{class:'scene',id:'scene-'+id});
     layer.appendChild(node);
     this.node=node; this.current=id; S().scene=id;
     MEI.scenes[id].render(node);
+    MEI.Clock.setPaused('hidden',document.hidden);
     requestAnimationFrame(()=>node.classList.add('active'));
   },
 
   async fadeToBlack(){
     const tl=MEI.$('#transition-layer');
+    if(!tl.querySelector('.fade-black'))tl.appendChild(MEI.el('div',{class:'fade-black'}));
     tl.classList.add('fade');
     await MEI.wait(430);
   },
@@ -166,4 +176,18 @@ MEI.checkTrueEnding = function(){
                 S().inventory.includes('letter');
   S().flags.trueEndingReady=ready;
   return ready;
+};
+
+MEI.startNewGame=function(){
+  if(MEI.SceneController.transitioning)return;
+  MEI.SceneController.cleanup();
+  const settings={...MEI.state.settings};
+  MEI.state=MEI.defaultState();MEI.state.settings=settings;MEI.state._warningSeen=true;
+  MEI.Hint.counts={};
+  for(const mails of [MEI.mailInbox,MEI.mailArchive])for(const m of mails||[])m.read=m._initialRead;
+  if(MEI.SoftHint){MEI.SoftHint.resetForScene('prologue');MEI.SoftHint.lastHintAt=0;}
+  const whisper=MEI.$('#sh-whisper');if(whisper)whisper.classList.remove('show');
+  MEI.applySettings();
+  MEI.SaveManager.persistSettings();
+  MEI.SceneController.goto('prologue',{transition:'fade'});
 };

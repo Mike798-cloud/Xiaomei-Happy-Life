@@ -6,7 +6,7 @@ function endingActions(sc){
     MEI.el('button',{class:'btn',onclick:()=>MEI.SceneController.goto('title',
       {transition:'fade'})},'回到标题'),
     MEI.el('button',{class:'btn btn-primary',
-      onclick:()=>MEI.SceneController.goto('prologue',{transition:'fade'})},'再玩一次'));
+      onclick:()=>MEI.startNewGame()},'再玩一次'));
 }
 
 function endingScene(id,label,build){
@@ -43,9 +43,9 @@ endingScene('ending_run','结局 · 离开',function(box){
     if(st.counter) box.appendChild(MEI.el('div',{class:'stinger-counter'},st.counter));
     box.appendChild(MEI.el('div',{class:'end-text'},st.text));
     i++;
-    if(i>=steps.length) setTimeout(()=>MEI.doThanks(box,'run'),400);
+    box.appendChild(MEI.el('div',{class:'end-continue'},'点击继续'));
   };
-  box.onclick=()=>{ if(i<steps.length) render(); };
+  box.onclick=()=>{ if(i<steps.length)render();else MEI.doThanks(box,'run'); };
   render();
 });
 
@@ -64,9 +64,9 @@ endingScene('ending_stay','结局 · 留下',function(box){
     box.innerHTML='';box.className='ending-world '+st.cls;
     box.appendChild(MEI.el('div',{class:'end-text'+(st.cls==='bright'?' bright':'')},st.text));
     i++;
-    if(i>=steps.length) setTimeout(()=>MEI.doThanks(box,'stay'),400);
+    box.appendChild(MEI.el('div',{class:'end-continue'},'点击继续'));
   };
-  box.onclick=()=>{ if(i<steps.length)render(); };render();
+  box.onclick=()=>{ if(i<steps.length)render();else MEI.doThanks(box,'stay'); };render();
 });
 
 /* ========== 结局三：记得（真结局） ========== */
@@ -124,7 +124,7 @@ MEI.doCemetery=function(box){
   flower.onclick=(ev)=>{ flowerDone=true;flower.classList.add('placed');
     MEI.Audio.candleLit();ev.stopPropagation();check(); };
   candle.onclick=(ev)=>{ candleDone=true;candle.classList.add('placed');
-    MEI.Audio.matchStrike();setTimeout(()=>MEI.Audio.candleLit(),200);
+    MEI.Audio.matchStrike();MEI.Clock.setTimeout(()=>MEI.Audio.candleLit(),200);
     ev.stopPropagation();check(); };
   function check(){ if(flowerDone&&candleDone){
     box.classList.remove('cemetery-lock');
@@ -185,7 +185,7 @@ MEI.thanksButtons=function(){
     MEI.el('button',{class:'btn',
       onclick:()=>MEI.SceneController.goto('title',{transition:'fade'})},'回到标题'),
     MEI.el('button',{class:'btn btn-primary',
-      onclick:()=>MEI.SceneController.goto('prologue',{transition:'fade'})},'再玩一次'),
+      onclick:()=>MEI.startNewGame()},'再玩一次'),
     MEI.el('button',{class:'btn btn-lamp',title:'替小美把灯留着',
       onclick:()=>{ try{ window.dispatchEvent(new CustomEvent('mei:open-support')); }catch(e){} }},
       '给小美留盏灯'));
